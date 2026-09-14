@@ -58,10 +58,25 @@ The bundled `new-skill` skill walks through this.
 
 ## Using it without the marketplace
 
-The component directories are plain files with no build step, so you can also
-symlink them straight into `~/.config/claude/{skills,agents,commands}` and
-edit them in place. For a declarative NixOS / home-manager version of that,
-see [nix-setup.md](nix-setup.md).
+Installing from the marketplace copies the plugin into a version-pinned cache
+directory, which is fine for using these skills but awkward for editing them —
+changes are lost on the next update.
+
+To work on them instead, clone the repo anywhere and point Claude Code's
+personal skills directory at it:
+
+```bash
+git clone git@github.com:Viscous106/claude-skills.git ~/Viscous/claude-skills
+
+ln -sfn ~/Viscous/claude-skills/plugins/viscous-skills/skills   ~/.config/claude/skills
+ln -sfn ~/Viscous/claude-skills/plugins/viscous-skills/agents   ~/.config/claude/agents
+ln -sfn ~/Viscous/claude-skills/plugins/viscous-skills/commands ~/.config/claude/commands
+```
+
+Use `~/.claude/` instead of `~/.config/claude/` unless `CLAUDE_CONFIG_DIR`
+says otherwise. Edits then take effect in the next session with no install
+step. Skills loaded this way are invoked as `/<name>`, not
+`/viscous-skills:<name>`.
 
 ## License
 

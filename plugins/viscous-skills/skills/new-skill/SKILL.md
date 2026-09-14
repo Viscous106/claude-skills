@@ -47,8 +47,7 @@ Optional: `model` pins a model for the skill, and
 3. Bump `version` in `.claude-plugin/plugin.json` only when publishing a
    change that marketplace users should pick up.
 
-## If the repo is symlinked into `~/.config/claude`
+## If the repo is symlinked into the skills directory
 
 Write to the repo path rather than through the symlink. Same inode either way,
-but the repo path keeps `git status` honest. See `nix-setup.md` for that
-arrangement.
+but the repo path keeps `git status` honest. See the README for that setup.
