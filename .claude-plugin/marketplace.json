@@ -1,0 +1,14 @@
+{
+  "name": "viscous",
+  "owner": {
+    "name": "Viscous106",
+    "url": "https://github.com/Viscous106"
+  },
+  "plugins": [
+    {
+      "name": "viscous-skills",
+      "source": "./plugins/viscous-skills",
+      "description": "Personal Claude Code skills, agents and slash commands."
+    }
+  ]
+}

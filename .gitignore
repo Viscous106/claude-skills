@@ -1,0 +1,8 @@
+# Editor / OS noise
+*.swp
+*~
+.DS_Store
+
+# Nix build results
+result
+result-*

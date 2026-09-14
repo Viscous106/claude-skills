@@ -1,0 +1,13 @@
+{
+  "name": "viscous-skills",
+  "displayName": "Viscous Skills",
+  "version": "0.1.0",
+  "description": "Personal Claude Code skills, agents and slash commands.",
+  "author": {
+    "name": "Viscous106",
+    "url": "https://github.com/Viscous106"
+  },
+  "repository": "https://github.com/Viscous106/claude-skills",
+  "license": "MIT",
+  "keywords": ["skills", "agents", "commands", "personal"]
+}
