@@ -1,48 +1,25 @@
 # claude-skills
 
 Personal [Claude Code](https://code.claude.com) skills, agents and slash
-commands. This repo is consumed two different ways from the same files.
+commands, packaged as a plugin marketplace.
 
-## For me (NixOS, live-editable)
-
-`home/modules/extras.nix` in [iUseNixBtw](https://github.com/Viscous106/iUseNixBtw)
-symlinks the component directories straight into `~/.config/claude`:
-
-| Symlink | Target |
-|---|---|
-| `~/.config/claude/skills` | `plugins/viscous-skills/skills` |
-| `~/.config/claude/agents` | `plugins/viscous-skills/agents` |
-| `~/.config/claude/commands` | `plugins/viscous-skills/commands` |
-
-They are `mkOutOfStoreSymlink`s, so edits land immediately — no rebuild, no
-`flake.lock` bump. The repo is cloned to `/persist/claude-skills`.
-
-## For everyone else (plugin marketplace)
+## Install
 
 ```
 /plugin marketplace add Viscous106/claude-skills
 /plugin install viscous-skills@viscous
 ```
 
-## Adding a skill
+Run both from inside Claude Code. The first command registers the
+marketplace, the second installs the plugin from it.
 
-```
-plugins/viscous-skills/skills/<skill-name>/SKILL.md
-```
+## What's in it
 
-with frontmatter:
-
-```markdown
----
-name: skill-name
-description: When Claude should reach for this skill.
----
-```
-
-Always set `name` explicitly. Marketplace installs place plugins in
-version-named directories, so the directory-name fallback is not stable.
-
-Agents go in `agents/<name>.md`, slash commands in `commands/<name>.md`.
+| Component | Location |
+|---|---|
+| Skills | `plugins/viscous-skills/skills/<name>/SKILL.md` |
+| Agents | `plugins/viscous-skills/agents/<name>.md` |
+| Slash commands | `plugins/viscous-skills/commands/<name>.md` |
 
 ## Layout
 
@@ -56,5 +33,36 @@ plugins/viscous-skills/
 ```
 
 The `.gitkeep` files keep the three component directories present in a fresh
-clone; without them git would drop the empty dirs and the symlinks above
-would dangle.
+clone — git drops empty directories otherwise.
+
+## Adding a skill
+
+Create `plugins/viscous-skills/skills/<skill-name>/SKILL.md`:
+
+```markdown
+---
+name: skill-name
+description: When Claude should reach for this skill.
+---
+
+Instructions go here.
+```
+
+Always set `name` explicitly. Marketplace installs place plugins in
+version-named directories, so the directory-name fallback is not stable.
+Write `description` as a trigger condition ("Use when…") rather than a
+summary — it is the only thing the model sees when deciding whether to load
+the skill.
+
+The bundled `new-skill` skill walks through this.
+
+## Using it without the marketplace
+
+The component directories are plain files with no build step, so you can also
+symlink them straight into `~/.config/claude/{skills,agents,commands}` and
+edit them in place. For a declarative NixOS / home-manager version of that,
+see [nix-setup.md](nix-setup.md).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
