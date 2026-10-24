@@ -111,14 +111,19 @@ Run experiments in parallel where possible; use the GPU (`cuML`, `XGBoost`
 
 ## Day-1 checklist for a new competition
 ```
-kaggle competitions download -c <slug> -p data --unzip
+kaggle competitions download <slug> -p data && (cd data && unzip -o -q '*.zip' && rm -f *.zip)
 python scripts/make_folds.py --train data/train.csv --target <y> --id-col <id> --out folds.csv
 python scripts/adversarial_validation.py --train data/train.csv --test data/test.csv --target <y> --id-col <id>
 # baseline → preds/lgb_v1_{oof,test}.npy, ledger add --accepted
 python scripts/check_submission.py --sub sub.csv --sample data/sample_submission.csv
-kaggle competitions submit -c <slug> -f sub.csv -m "lgb_v1 cv=0.xxxx"
+kaggle competitions submit <slug> -f sub.csv -m "lgb_v1 cv=0.xxxx"
 python scripts/ledger.py lb --name lgb_v1 --public <score>
 ```
+
+CLI v2.x takes the slug positionally and has no `--unzip`; see `kaggle-cli`.
+Some competitions also forbid fitting anything on test (in-class rules, for
+example), which rules out adversarial validation and train+test encodings —
+read the rules before running the checklist.
 
 ## Working style with the user
 - Say what you will try and why before running long jobs; report CV deltas with

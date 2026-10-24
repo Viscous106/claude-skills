@@ -31,21 +31,40 @@ The competition must be **joined** (rules accepted on the website) before
 
 ## Competitions
 
+In CLI v2.x the competition slug is a **positional** argument, not `-c`, and
+`--unzip` no longer exists — the download arrives as a zip you extract yourself.
+Both differences break v1-era commands copied from blog posts.
+
 ```bash
-kaggle competitions list -s <search>                  # find the slug
-kaggle competitions list --group entered              # what the user has joined
-kaggle competitions files -c <slug>
-kaggle competitions download -c <slug> -p data --unzip
-kaggle competitions download -c <slug> -f train.csv -p data
-kaggle competitions submit -c <slug> -f submission.csv -m "lgb_v3 cv=0.9412" --wait
-kaggle competitions submissions -c <slug>             # history with public scores
-kaggle competitions leaderboard -c <slug> -s           # show top of LB
-kaggle competitions leaderboard -c <slug> -d -p lb/    # download full LB csv
+kaggle competitions list -s <search>                   # find the slug
+kaggle competitions list --group entered               # what the user has joined
+kaggle competitions files <slug>
+kaggle competitions download <slug> -p data            # then: cd data && unzip -o '*.zip' && rm *.zip
+kaggle competitions download <slug> -f train.csv -p data
+kaggle competitions submit <slug> -f submission.csv -m "lgb_v3 cv=0.9412"
+kaggle competitions submissions <slug>                 # history with public scores
+kaggle competitions leaderboard <slug> -s              # show top of LB
+kaggle competitions leaderboard <slug> -d -p lb/       # download full LB csv (also zipped)
 kaggle competitions topics list <slug>                 # discussion titles
 kaggle competitions topics show <topic-ref>            # full thread
 ```
 
 Add `-v` for CSV output when parsing programmatically.
+
+OAuth sessions from `kaggle auth login` expire after a few hours. The symptom is
+"Authentication required to call the Kaggle API" on any command while
+`kaggle auth login` still says "already logged-in" (it only checks that the
+credentials file exists). Fix: `kaggle auth login --force`, or switch to a
+persistent API token in `~/.kaggle/access_token`.
+
+Diagnosing a failed download: `files` works but `download` returns **403** when the
+competition's rules have not been accepted. Accepting them is a browser action the
+user has to do on the competition page; no CLI flag substitutes for it. A **401**
+instead means the credentials are missing or stale.
+
+A real submission may be blocked by the agent harness as an outward-facing
+transaction even when the CLI is working. When that happens, hand the user the exact
+`kaggle competitions submit` line in a copy-paste block rather than retrying.
 
 ## Submission protocol
 
