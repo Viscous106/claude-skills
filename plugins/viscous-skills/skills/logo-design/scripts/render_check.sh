@@ -9,6 +9,10 @@
 # colours still render, they just will not invert.
 #
 # Env overrides: LIGHT_BG, LIGHT_FG, DARK_BG, DARK_FG, LABEL_FONT.
+# Accent colour: parts marked class="accent" (filled) or class="accent-line"
+# (stroked) take LIGHT_ACCENT / DARK_ACCENT when set; otherwise they stay
+# currentColor, so the same file is the one-colour and the accent version.
+# (librsvg ignores CSS custom properties, so use classes, not var(--x).)
 set -euo pipefail
 
 if [ $# -lt 2 ]; then
@@ -35,9 +39,14 @@ command -v magick >/dev/null || { echo "needs ImageMagick (magick)" >&2; exit 1;
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-css() { printf 'svg { color: %s; }\n' "$1" > "$work/$2.css"; }
-css "$LIGHT_FG" light
-css "$DARK_FG" dark
+css() { # fg name [accent]
+  printf 'svg { color: %s; }\n' "$1" > "$work/$2.css"
+  if [ -n "${3:-}" ]; then
+    printf '.accent { fill: %s; } .accent-line { stroke: %s; }\n' "$3" "$3" >> "$work/$2.css"
+  fi
+}
+css "$LIGHT_FG" light "${LIGHT_ACCENT:-}"
+css "$DARK_FG" dark "${DARK_ACCENT:-}"
 
 # Render one SVG at a size on a background colour, with currentColor set,
 # centred in a square cell (default: the size plus a quarter of padding).

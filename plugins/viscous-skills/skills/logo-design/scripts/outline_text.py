@@ -16,6 +16,7 @@ Get Google fonts from github.com/google/fonts (ofl/<family>/) or @fontsource pac
 """
 
 import argparse
+import re
 
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
@@ -52,13 +53,14 @@ def main() -> None:
         if i < len(a.text) - 1:
             x += a.tracking * a.size
 
+    d = re.sub(r"-?\d+\.\d+", lambda m: f"{float(m.group()):.2f}".rstrip("0").rstrip("."), pen.getCommands())
     w, h = round(x, 2), round(ascent + descent, 2)
     cap = round(os2.sCapHeight * scale, 2)
     xh = round(os2.sxHeight * scale, 2)
     print(
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}">'
         f"<!-- baseline y={round(ascent, 2)} cap-height={cap} x-height={xh} -->"
-        f'<path fill="{a.fill}" d="{pen.getCommands()}"/></svg>'
+        f'<path fill="{a.fill}" d="{d}"/></svg>'
     )
 
 

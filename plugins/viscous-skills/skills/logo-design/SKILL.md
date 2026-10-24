@@ -56,7 +56,9 @@ case studies, and the evidence behind every rule below are in `reference.md`.
 
 The user stars favourites. Develop 3-5 **routes**, each one idea with a one-line
 rationale tied to the goals list. Show each in context: favicon in a browser tab, nav
-bar next to the wordmark, app icon, avatar, light and dark. One route can be
+bar next to the wordmark, app icon, avatar, light and dark. Put each route in its own
+folder (`mark.svg`, `lockup.svg`, optional `mark-small.svg`, `wordmark.svg`, `notes.md`)
+and generate the page with `showcase.mjs`. One route can be
 wordmark-led; for many dev brands the wordmark is primary and the symbol is shorthand.
 
 ## Phase 3: build the chosen route properly
@@ -71,6 +73,10 @@ wordmark-led; for many dev brands the wordmark is primary and the symbol is shor
   to 5%); a circle needs about 11% more extent than a square to look equal; horizontals
   slightly thinner than verticals; centre slightly above the geometric centre; the
   white-on-dark version a touch thinner than the dark-on-light one.
+- Colour: draw everything with `currentColor`; mark the part that may take an accent
+  with `class="accent"` (fills) or `class="accent-line"` (strokes). One file is then
+  both the one-colour and the accent version; scripts and CSS colour the class.
+  Do not use CSS variables inside the SVG (librsvg ignores them).
 - Master file: no `<text>` (outline it with `outline_text.py`), no rasters, filters,
   masks or clip paths; strokes expanded to fills at the end (`inkscape` actions or
   `picosvg`); `role="img"` and `<title>`; `svgo --multipass`.
@@ -119,6 +125,7 @@ claim. Recommend a professional clearance search before any trademark filing.
 | `outline_text.py FONT TEXT --weight 600` | wordmark as SVG outlines with cap and x-height |
 | `export_set.sh mark.svg out/ FG BG DARK_FG` | favicon, app icon and avatar set with manifest and tags |
 | `node picker.mjs DIR --name Brand` | local shortlist page; stars and note land in `DIR/picks.json` |
+| `node showcase.mjs ROUTES_DIR --name Brand --tagline "..."` | routes in 8 colour treatments and in context (tab, nav, avatar, app icon, social card, size ladder); static HTML |
 
 Tools on NixOS: `magick` is on PATH; get the rest with
 `nix shell nixpkgs#librsvg nixpkgs#vtracer nixpkgs#resvg nixpkgs#svgo nixpkgs#inkscape`.

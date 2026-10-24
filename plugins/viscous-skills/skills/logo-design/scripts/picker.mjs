@@ -2,6 +2,9 @@
 //
 //   node picker.mjs DIR [--port 4777] [--name Brand] [--light-bg #F4F5F7] [--light-fg #0E1018]
 //                       [--dark-bg #0B0C0F] [--dark-fg #ECEEF2]
+//                       [--light-accent #0E9F74] [--dark-accent #3CCB98]
+// Parts marked class="accent" (filled) or class="accent-line" (stroked) take the
+// accent colours; without the flags they stay currentColor.
 //
 // Shows every DIR/*.svg (re-read on each page load, so new concepts appear on refresh):
 // large on light and dark, in a nav bar next to the brand name, and at 32 and 16 px.
@@ -27,7 +30,11 @@ const brand = opt("name", "Brand");
 const C = {
   lbg: opt("light-bg", "#F4F5F7"), lfg: opt("light-fg", "#0E1018"),
   dbg: opt("dark-bg", "#0B0C0F"), dfg: opt("dark-fg", "#ECEEF2"),
+  la: opt("light-accent", ""), da: opt("dark-accent", ""),
 };
+const accentCss =
+  (C.la ? `.l .accent{fill:${C.la}}.l .accent-line{stroke:${C.la}}` : "") +
+  (C.da ? `.d .accent{fill:${C.da}}.d .accent-line{stroke:${C.da}}` : "");
 const picksPath = path.join(dir, "picks.json");
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
@@ -79,6 +86,7 @@ h3{margin:0;font-size:15px}.card p{margin:0;color:var(--sub);font-size:13px}
 .bar div{max-width:1280px;margin:0 auto;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 #picks{flex:1 1 220px;font:13px ui-monospace,monospace}#note{flex:2 1 300px;padding:9px 12px;border:1px solid var(--line);border-radius:9px}
 #st{font-size:12px;color:var(--sub)}:focus-visible{outline:2px solid #1f6bff;outline-offset:2px}
+${accentCss}
 </style></head><body><div class="wrap">
 <div><h1>${esc(brand)} logo shortlist</h1><p style="color:var(--sub);margin:4px 0 0">${ms.length} concepts. Star the ones you like, say what to change in the note. Refresh to see new concepts.</p></div>
 ${groups.map((g) => `<section><h2>${esc(g)}</h2><div class="grid">${ms.filter((m) => m.group === g).map(card).join("")}</div></section>`).join("")}
