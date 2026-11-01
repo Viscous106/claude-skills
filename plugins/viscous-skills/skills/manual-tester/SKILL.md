@@ -20,6 +20,15 @@ The goal is two things: exercise the product the way a user would, and leave beh
 4. **Never assert what you did not observe.** If a check was skipped or was inconclusive, record it as such.
 5. **No fixes during the run** unless the user asks. Test, record, move on. Fixing comes after.
 6. **Git is read-only** for you (user's global rule). Print commands for the user to run.
+7. **Passive only on security.** Observe headers, cookies, bundles and error bodies on the user's own site. Do not
+   brute-force, fuzz auth, hammer endpoints, test other people's accounts, or send payloads beyond harmless text. The
+   only email you request a code for is one the user gave you; never type a code the user did not give you.
+8. **Reproduce before you log.** Re-run a failure once (ideally fresh state) and record how often it happened (3/3, 1/3).
+   If you cannot repeat it, log it as `flaky` with what you saw, not as a confirmed bug.
+9. **Name the oracle.** Every issue says which expectation it violates (UI copy, docs, the demo, the PRD or paper, a
+   standard, consistency with another screen). "Looks wrong" is not an issue.
+10. **Do not trust a green status.** A 200 and no console errors say nothing about whether the page is right. Look at the
+    screenshot or accessibility snapshot of every page you claim passed.
 
 ## Setup
 
@@ -46,11 +55,30 @@ Use `playwright-core` from the project's `node_modules` (find with `find . -name
 attach with `chromium.connectOverCDP("http://localhost:<port>")`. Reusing one browser across scripts is what lets the
 user log in once by hand and have you continue in the same session. Scripts live in the scratchpad, not the project.
 
-Run headed with `slowMo` ~100 ms so the user can watch.
+Run headed with `slowMo` ~100 ms so the user can watch. Reuse one Chrome profile (a dedicated dir, never the user's) so
+a login done once by hand survives relaunches. `playwright-cli` is an optional extra (annotate-on-page feedback, video
+chapters) and may not be installed: check `which playwright-cli` and fall back to `playwright-core` scripts.
 
-## What to test (adapt to the product)
+## How to run it: charters, not a flat checklist
 
-Work through these one by one, announcing each area before you start it:
+Work in short, named **sessions**, each with a charter: *Explore `<area>` with `<technique/data>` to discover `<risk>`*.
+Plan the charters up front from the **SFDIPOT** checklist (Structure, Function, Data, Interfaces, Platform, Operations,
+Time) so coverage is deliberate, tell the user the list, then run them one at a time. Per session:
+
+1. Announce the charter. Start a Playwright **trace** for it (`ctx.tracing.start`) so any failure can be replayed.
+2. Test, mixing happy path, edge data, and **fault injection** (offline, injected 500/401, slow API, double submit,
+   reload mid-flow, two tabs; recipes in [reference.md](reference.md)).
+3. Log issues immediately; stop the trace into `evidence/<session>.trace.zip`.
+4. Close with the short **PROOF** debrief (Past, Results, Obstacles, Outlook, Feelings) in the tracker. "It felt
+   confusing" is a valid `ux` finding even with no error.
+5. Leftover ideas become new charters, not scope creep inside the current one.
+
+Read [reference.md](reference.md) before planning: SFDIPOT, oracles (HICCUPPS), fault-injection recipes, issue taxonomy,
+passive security checks and the evidence/post-mortem commands (`npx playwright trace ...`).
+
+## Baseline coverage (adapt to the product)
+
+Whatever the charters, make sure these have been covered by the end, announcing each area before you start it:
 
 1. **Every route** (from the router source or sitemap): status, `<title>`, an `h1`, no blank screen, no uncaught error.
    Also an unknown URL, and a deep link opened cold (refresh on a nested route).
@@ -65,7 +93,14 @@ Work through these one by one, announcing each area before you start it:
    overlapping content, unreachable nav.
 8. **Theme and state**: dark mode toggle, persistence after reload, no flash of wrong theme.
 9. **Media**: video and images load, play, have alt text.
-10. **Quick a11y**: keyboard tab order reaches the main actions, visible focus, labels on icon buttons.
+10. **Quick a11y**: keyboard tab order reaches the main actions, visible focus, labels on icon buttons, Escape closes
+    dialogs, focus returns after a dialog, headings in order.
+11. **First-run vs returning user**: a fresh account, then the same account after reload, sign-out and sign-in. State that
+    lives only in memory shows up here.
+12. **Claims vs reality**: every promise in UI copy, marketing and docs ("start free", "no wallet needed", "nothing is
+    paid until you approve") gets tried and confirmed or logged as `content`.
+13. **Passive security** (see rule 7 and reference.md section 6): headers, cookie flags, what sits in localStorage,
+    secrets in the bundle or errors, protected routes when signed out.
 
 Take a screenshot of every page and of every failure. Read the screenshots; do not assume a 200 means it looks right.
 
@@ -81,18 +116,25 @@ Env: <url>, Chrome <version>, viewport(s), signed in as <role or "signed out">
 Scope tested / not yet tested: <lists>
 
 ## Issues
-### ISS-001 [High|Med|Low] <short title>  (status: open)
+### ISS-001 [High|Med|Low] <short title>  (status: open)   tags: functional|ux|content|visual|a11y|performance|console/network|security-passive|data|compat|flaky
 - **Where:** <route>, <component or file if known>
-- **Steps to reproduce:** 1. ... 2. ... 3. ...
-- **Expected:** ...
+- **Found in session:** S-03 (<charter>)   **Frequency:** 3/3   **Affects:** <who / which state, e.g. new accounts only>
+- **Steps to reproduce:** 1. ... 2. ... 3. ... (start state: signed out / fresh account / viewport)
+- **Expected:** ...   **Oracle:** <which expectation: UI copy "...", PRD/paper section, demo behaviour, standard>
 - **Actual:** ...
+- **Impact / workaround:** <what the user loses; how to get around it, or "none">
 - **Debug detail:** <exact console error, failing request URL + status + response body snippet, DOM/selector
   observed, viewport, timestamp>
 - **Evidence:** evidence/ISS-001.png, evidence/ISS-001.log
 - **Suspected cause:** <your reasoning, with file:line when you checked the source. Mark as "hypothesis" unless
   verified>
 - **Suggested fix:** <one or two lines>
+- **How to verify the fix:** <the exact steps/assertion that proves it is fixed; ideally a Playwright snippet or e2e
+  test name that would have caught it>
 - **Needs user input:** <anything blocking a fix, or "no">
+
+## Sessions
+(one PROOF block per charter, see reference.md section 7)
 
 ## Passed
 - <check>: <what was observed>
@@ -115,5 +157,7 @@ ruled out, so the fixer does not repeat it.
    `pgrep -f | xargs kill` from a Bash call: the pattern matches the tool's own shell command line and kills it (exit
    144) before it kills Chrome. If you must search by pattern, use `ps -eo pid,args | grep "[p]attern"`. Then confirm with `hyprctl clients -j` that nothing of yours is
    left on workspace 5.
-2. Print a summary: counts by severity, the top issues in priority order, what was skipped and why.
+2. Print a summary: counts by severity (excluding `Check`/`flaky`), the top issues in priority order, coverage by
+   SFDIPOT dimension (what was and was not touched), what was skipped and why, and a **fix order** that groups issues by
+   shared cause (one change that closes several). Offer to turn the "How to verify the fix" lines into e2e tests.
 3. Print the git commands for the user to commit `testing/` if they want it kept. Do not run them.
