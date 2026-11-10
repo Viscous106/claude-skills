@@ -1,4 +1,4 @@
-"""Transcribe every wav in edit/audio with faster-whisper, writing word-timed JSON + readable TXT."""
+"""Transcribe every wav in audio/ (skip names matching $SKIP) with faster-whisper, writing word-timed JSON + readable TXT."""
 import json
 import sys
 from pathlib import Path
@@ -14,13 +14,18 @@ out_dir.mkdir(exist_ok=True)
 
 model = WhisperModel(model_name, device="cpu", compute_type="int8", cpu_threads=14)
 
+import os
+skip = os.environ.get("SKIP", "")
 for wav in sorted(audio_dir.glob("*.wav")):
+    if skip and wav.stem.startswith(skip):
+        continue
     out_json = out_dir / f"{wav.stem}.json"
     if out_json.exists():
         continue
     segments, info = model.transcribe(
         str(wav), language=language, task="transcribe", word_timestamps=True, vad_filter=True,
         beam_size=5, condition_on_previous_text=False,
+        temperature=0.0 if os.environ.get("TEMP0") else [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
     )
     segs = [
         {

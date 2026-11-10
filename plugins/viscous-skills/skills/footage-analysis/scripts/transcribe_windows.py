@@ -7,7 +7,8 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 lang = sys.argv[1]
-model = WhisperModel("large-v3", device="cpu", compute_type="int8", cpu_threads=12)
+import os
+model = WhisperModel(os.environ.get("MODEL", "large-v3"), device="cpu", compute_type="int8", cpu_threads=14)
 for spec in sys.argv[2:]:
     clip, span = spec.split(":")
     a, b = map(float, span.split("-"))

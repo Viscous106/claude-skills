@@ -75,6 +75,31 @@ plus a system ffmpeg built with libass, libvidstab and fontconfig.
 6. **Music**: `./run python3 scripts/music_beats.py` → `music/beats.json` (bpm, beat
    times, energy per second) for every track in `edit/music/` — see `royalty-free-music`.
 
+## Many folders at once (a whole trip)
+
+Keep one work dir for the trip and name every derived file `<Folder>__<stem>` (spaces →
+`_`) so clips with the same GoPro number in different folders don't collide:
+- `scripts/probe_all.sh <root> > probe.tsv` — every clip: folder, path, duration, size,
+  rotation tag, has-audio, creation time. Empty fields are written as `-` because bash
+  `read` with a tab IFS collapses consecutive tabs and shifts the columns.
+- `scripts/extract_audio.sh` and `scripts/sheets_all.sh` work from `probe.tsv`;
+  `scripts/photo_sheets_all.sh` makes 36-photo grids per folder (subfolders labelled).
+- Contact sheets: ffmpeg's `tile` only emits a *full* grid — a clip shorter than
+  24 × step gives no image at all, so step = dur/24.5; `-skip_frame nokey` only for
+  clips over a minute; end the chain with `format=yuvj420p` (WhatsApp clips are
+  limited-range and mjpeg refuses them).
+- GoPro file numbers are not chronological across cameras/days — order by content and
+  ask the user for the story order early.
+- Logging 150 clips: hand each folder group to a parallel subagent with the people key
+  and the story order, and have each write `logs/<group>.md` (clip | orientation | who |
+  moments with timestamps | problems | usability | quotes) plus a Reel shot list. Read
+  the logs, not the sheets, to write the script; spot-check the claims that matter
+  (rotation direction, who's who) with single frames.
+- Hinglish windows on CPU: `large-v3` crawled at ~0.05× real time with other load;
+  `MODEL=large-v3-turbo scripts/transcribe_windows.py hi …` is ~10× faster. Turbo in
+  Hindi mode loops (`कर दो कर दो…`) on noisy stretches — take the words from it where
+  it's clean and the timings/meaning from the English pass.
+
 Process hygiene: never `pkill -f <pattern>` in the same shell command whose own text
 contains the pattern — it kills your own shell (exit 144). Kill by PID from `pgrep -a`.
 
