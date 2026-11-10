@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Run a command inside the vlog tool environment. The host LD_LIBRARY_PATH points at a newer glibc build of alsa, so drop it.
+dir="$(dirname "$(realpath "$0")")"
+exec env -u LD_LIBRARY_PATH HF_HOME="$HOME/.cache/huggingface" \
+  nix shell --impure --expr "import (/. + \"$dir/env.nix\")" --command "$@"
