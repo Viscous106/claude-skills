@@ -9,12 +9,18 @@ description: Use when you need to actually cut and render a video from an edit p
 tool env with `./run python3 scripts/render.py …`).
 
 ```
-render.py plans/youtube.json [--subs on|off] [--titles on|off] [--draft] [--out NAME]
+render.py plans/youtube.json [--subs on|off] [--titles on|off] [--draft] [--jobs N] [--out NAME]
 ```
 Writes `edit/renders/<name>[_nocaptions][_draft].mp4`. Per-segment intermediates are
-cached in `edit/build/` by a hash of the segment + output size, so re-rendering after a
-small plan change only re-encodes what changed. `--draft` = ultrafast encode, no
-stabilisation: use it for every iteration, final render only at the end.
+cached in `edit/build/` by a hash of the segment's *picture and sound* + output size
+(`subs`/`titles` are excluded — they are burned in at the final pass), so caption and
+title edits never re-encode segments. `--draft` = ultrafast encode, no stabilisation: use
+it for every iteration, final render only at the end. `--jobs 4` renders segments in
+parallel (a 120-segment trip vlog drafts in a few minutes instead of half an hour).
+
+Footage spread over several folders (a whole trip): set `VLOG_FOOTAGE=<root>` and give
+`src`/`photo` paths relative to it (`"Juhu Beach/GX010073_enhanced.mp4"`). An absolute
+`photo` path also works — use it for generated graphics kept in the work dir.
 
 ## Plan format
 
@@ -30,7 +36,9 @@ stabilisation: use it for every iteration, final render only at the end.
      "titles": [{"text": "Cat Café Studio", "sub": "ANDHERI WEST · MUMBAI", "start": 0.3, "end": 3},
                 {"text": "Yash", "style": "Label", "start": 0.3, "end": 2.5},
                 {"text": "SO CUTE!!", "style": "Pop", "y": 0.3, "start": 0.2, "end": 1.6}]},
-    {"photo": "GOPR0309.png", "dur": 2.5, "kenburns": "in", "focus": 0.6}
+    {"photo": "GOPR0309.png", "dur": 2.5, "kenburns": "in", "focus": 0.6},
+    {"photo": "end.png", "dur": 5, "titles": [{"text": "Thanks for watching!", "sub": "Edited and Produced by …",
+                                               "credits": ["Music: … · CC BY 4.0"], "start": 0.3, "end": 4.8}]}
   ],
   "music": [{"src": "music/Carefree.mp3", "at": 0, "from": 0, "dur": 30, "vol": 0.22, "fade": 1.5}]
 }
@@ -42,9 +50,19 @@ stabilisation: use it for every iteration, final render only at the end.
   the face/cat), `pad` = black bars.
 - `rotate`: 90 / -90 / 180 for GoPro clips shot sideways (check the contact sheet).
 - `speed` ≠ 1 mutes clip audio unless `keep_audio_on_speed`.
+- `audio: {"src", "in", "vol"?}` plays another clip's sound under this picture — a VO line
+  whose own picture is a finger/blur/extreme close-up goes over b-roll this way. Captions
+  must then come from the audio clip (the example builder handles it).
+- `mute: [[a, b], …]` silences segment-relative ranges (bleep a swear word; show
+  `[beep]` in the caption).
+- `tilt: deg` straightens a crooked horizon (rotates, then crops the corners away).
+- Any `Label`/`Pop` can take `pos: [x, y]` (fractions of the frame, centred) — for a
+  "meet the team" group photo put one label on each person's chest or above the head,
+  staggered so neighbours don't overlap, and check the frame.
 - Title styles: `Title` (Pacifico, centred, with optional `sub` line), `Label` (name
   tag, bottom-left / top in vertical), `Pop` (yellow punchy reaction text), `Sub`
-  (dialogue captions, Baloo 2 — has Devanagari and Latin, good for Hinglish).
+  (dialogue captions, Baloo 2 — has Devanagari and Latin, good for Hinglish). A `Title`
+  can carry `sub` (one line) and `credits` (list of smaller lines) for end cards.
   Fonts live in `edit/fonts/` (Google Fonts OFL: Baloo 2, Poppins, Pacifico) and are
   passed to libass via `fontsdir`.
 
@@ -73,6 +91,12 @@ Don't run renders while a Whisper job is using every core.
 
 ## QA — always look at the result
 
+- Long cuts: `scripts/qc_parts.sh renders/x.mp4 300 4 10 8 108 frames/qc` → one grid per
+  5 minutes (a single grid of a 15-min vlog is too small to read).
+  Typical trip-vlog misses: white title over a white screenshot (unreadable), a pop text
+  sitting on the wrong part of a graphic (make a custom highlight graphic instead),
+  a vertical Label colliding with a Pop at the top of a Reel (Pop y ≥ 0.28 there),
+  an ending on an extreme close-up (move its audio onto b-roll).
 - `scripts/qc_sheet.sh renders/x.mp4 6 6 200 frames/qc.jpg` (YouTube: a frame every 6 s)
   or `… 2 13 300 …` (Reel: every 2 s) → one timestamped grid of the whole render. Read it: caption size/placement, crop focus on faces, rotation, title
   legibility, nothing covered by the Reel UI (keep text out of the bottom ~20 % and the

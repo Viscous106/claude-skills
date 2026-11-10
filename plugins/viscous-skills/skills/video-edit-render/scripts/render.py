@@ -16,7 +16,8 @@ Plan format (times in seconds, source paths relative to the footage folder):
      "vol": 1.0,             # clip audio gain; 0 mutes
      "fade_in": 0, "fade_out": 0,
      "subs": [[0.2, 2.1, "Toh guys, hum ja rahe hai cat cafe!"]],   # relative to segment start
-     "title": {"text": "Cat Cafe Studio", "sub": "Andheri West, Mumbai", "start": 0, "end": 3, "style": "Title"}
+     "title": {"text": "Cat Cafe Studio", "sub": "Andheri West, Mumbai", "credits": ["smaller line"],
+               "start": 0, "end": 3, "style": "Title"}
     },
     {"photo": "GOPR0309_enhanced.png", "dur": 2.5, "kenburns": "in"}   # still with slow zoom
   ],
@@ -33,7 +34,7 @@ import sys
 from pathlib import Path
 
 edit = Path(__file__).resolve().parents[1]
-footage = edit.parent
+footage = Path(os.environ.get("VLOG_FOOTAGE", edit.parent))  # source paths resolve against this
 work = edit / "build"
 fonts = edit / "fonts"
 
@@ -68,7 +69,8 @@ def fit_chain(W, H, fit, zoom, focus):
 
 def render_segment(i, seg, plan, draft):
     W, H, fps = plan["width"], plan["height"], plan["fps"]
-    key = hashlib.sha1(json.dumps([seg, W, H, fps, draft], sort_keys=True).encode()).hexdigest()[:10]
+    pic = {k: v for k, v in seg.items() if k not in ("subs", "titles")}  # burned in later, not part of the segment
+    key = hashlib.sha1(json.dumps([pic, W, H, fps, draft], sort_keys=True).encode()).hexdigest()[:10]
     out = work / f"{plan['name']}_{i:03d}_{key}.mp4"
     if out.exists():
         return out
@@ -102,6 +104,9 @@ def render_segment(i, seg, plan, draft):
         pre.append("transpose=2")
     elif rot == 180:
         pre.append("hflip,vflip")
+    if seg.get("tilt"):  # straighten a tilted horizon (degrees, + = clockwise), then crop off the corners
+        a = seg["tilt"]
+        pre.append(f"rotate={a}*PI/180:ow=iw:oh=ih,scale=iw*1.3:-2,crop=iw/1.3:ih/1.3")
     if seg.get("stabilize") and not draft:
         trf = work / f"{out.stem}.trf"
         sh(["ffmpeg", "-nostdin", "-y", "-v", "error", "-ss", str(t0), "-to", str(t1), "-i", str(src),
@@ -123,12 +128,23 @@ def render_segment(i, seg, plan, draft):
     vol = seg.get("vol", 1.0)
     if speed != 1.0 and not seg.get("keep_audio_on_speed"):
         vol = 0
-    if has_audio(src) and vol > 0:
-        af = f"[0:a:0]atempo={speed}," if speed != 1.0 else "[0:a:0]"
-        af += f"highpass=f=80,volume={vol},afade=t=in:d={max(fi, 0.05)},afade=t=out:st={max(dur - max(fo, 0.08), 0)}:d={max(fo, 0.08)}[a]"
-        amap, ain = ["-map", "[a]"], []
+    # "audio": {"src": ..., "in": t} plays another clip's sound under this picture (VO over b-roll)
+    alt = seg.get("audio")
+    asrc, ain0 = (footage / alt["src"], ["-ss", str(alt["in"]), "-t", str(dur), "-i", str(footage / alt["src"])]) if alt else (src, [])
+    if alt:
+        vol, speed_a = alt.get("vol", 1.0), 1.0
+    else:
+        speed_a = speed
+    mutes = "".join(f"volume=enable='between(t,{a},{b})':volume=0," for a, b in seg.get("mute", []))
+    if has_audio(asrc) and vol > 0:
+        ai = "1:a:0" if alt else "0:a:0"
+        af = f"[{ai}]atempo={speed_a}," if speed_a != 1.0 else f"[{ai}]"
+        af += f"{mutes}highpass=f=80,volume={vol},apad,atrim=0:{dur},afade=t=in:d={max(fi, 0.05)},afade=t=out:st={max(dur - max(fo, 0.08), 0)}:d={max(fo, 0.08)}[a]"
+        amap, ain = ["-map", "[a]"], ain0
     else:
         af, ain, amap = "", ["-f", "lavfi", "-t", str(dur), "-i", "anullsrc=r=48000:cl=stereo"], ["-map", "1:a"]
+    if alt and not af:
+        ain = ["-f", "lavfi", "-t", str(dur), "-i", "anullsrc=r=48000:cl=stereo"]
     fc = vf + (";" + af if af else "")
     sh(["ffmpeg", "-nostdin", "-y", "-v", "error", "-ss", str(t0), "-to", str(t1), "-i", str(src), *ain,
         "-filter_complex", fc, "-map", "[v]", *amap, "-t", str(dur), "-r", str(fps), *enc, str(out)])
@@ -165,6 +181,7 @@ Style: Sub,Baloo 2,{sub_size},&H00FFFFFF,&H000000FF,&H00101010,&H80000000,-1,0,0
 Style: Title,Pacifico,{title_size},&H00FFFFFF,&H000000FF,&H00502A8C,&H80000000,0,0,0,0,100,100,0,0,1,{max(4, title_size // 14)},3,5,80,80,0,1
 Style: TitleSub,Poppins SemiBold,{int(title_size * 0.42)},&H00FFFFFF,&H000000FF,&H00101010,&H80000000,-1,0,0,0,100,100,1,0,1,3,2,5,80,80,0,1
 Style: Label,Poppins ExtraBold,{int(sub_size * 1.05)},&H00FFFFFF,&H000000FF,&H00000000,&HB05A2BE0,-1,0,0,0,100,100,1,0,3,14,0,{1 if not vertical else 8},50,50,{int(H*0.06) if not vertical else int(H*0.12)},1
+Style: Credit,Poppins SemiBold,{int(title_size * (0.36 if vertical else 0.25))},&H00FFFFFF,&H000000FF,&H00101010,&H80000000,0,0,0,0,100,100,1,0,1,2,2,5,60,60,0,1
 Style: Pop,Poppins ExtraBold,{int(title_size * 0.62)},&H0000E5FF,&H000000FF,&H00101010,&H80000000,-1,0,0,0,100,100,1,0,1,{max(4, title_size // 16)},3,5,60,60,0,1
 
 [Events]
@@ -186,12 +203,21 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 cy = H * (0.42 if not vertical else 0.38)
                 pos = rf"{{\pos({W/2},{cy})\fad(400,400)}}"
                 lines.append(f"Dialogue: 1,{ass_time(s)},{ass_time(e)},Title,,0,0,0,,{pos}{ti['text']}")
+                y = cy + title_size * 0.95
                 if ti.get("sub"):
-                    pos2 = rf"{{\pos({W/2},{cy + title_size * 0.95})\fad(400,400)}}"
+                    pos2 = rf"{{\pos({W/2},{y})\fad(400,400)}}"
                     lines.append(f"Dialogue: 1,{ass_time(s + 0.3)},{ass_time(e)},TitleSub,,0,0,0,,{pos2}{ti['sub']}")
+                    y += title_size * 0.62
+                for k, credit in enumerate(ti.get("credits", [])):  # smaller lines under the title block
+                    pos3 = rf"{{\pos({W/2},{y + k * title_size * 0.4})\fad(400,400)}}"
+                    lines.append(f"Dialogue: 1,{ass_time(s + 0.5)},{ass_time(e)},Credit,,0,0,0,,{pos3}{credit}")
             elif style == "Pop":
                 pos = rf"{{\pos({W/2},{H * ti.get('y', 0.3)})\fad(150,250)\t(0,180,\fscx115\fscy115)\t(180,320,\fscx100\fscy100)}}"
                 lines.append(f"Dialogue: 2,{ass_time(s)},{ass_time(e)},Pop,,0,0,0,,{pos}{ti['text']}")
+            elif "pos" in ti:  # explicit placement as fractions of the frame, centred on the point
+                px, py = ti["pos"]
+                lines.append(f"Dialogue: 2,{ass_time(s)},{ass_time(e)},{style},,0,0,0,,"
+                             rf"{{\an5\pos({W * px:.0f},{H * py:.0f})\fad(300,300)}}{ti['text']}")
             else:
                 lines.append(f"Dialogue: 2,{ass_time(s)},{ass_time(e)},{style},,0,0,0,,{fade}{ti['text']}")
         t += d
@@ -206,15 +232,19 @@ def main():
     ap.add_argument("--titles", default="on")
     ap.add_argument("--draft", action="store_true")
     ap.add_argument("--out")
+    ap.add_argument("--jobs", type=int, default=1, help="segments rendered in parallel")
     a = ap.parse_args()
     plan = json.loads(Path(a.plan).read_text())
     work.mkdir(exist_ok=True)
     (edit / "renders").mkdir(exist_ok=True)
 
-    parts = []
-    for i, seg in enumerate(plan["segments"]):
-        parts.append(render_segment(i, seg, plan, a.draft))
-        print(f"segment {i + 1}/{len(plan['segments'])}", flush=True)
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=a.jobs) as pool:  # each segment is an independent ffmpeg run
+        futs = [pool.submit(render_segment, i, seg, plan, a.draft) for i, seg in enumerate(plan["segments"])]
+        parts = []
+        for i, f in enumerate(futs):
+            parts.append(f.result())
+            print(f"segment {i + 1}/{len(futs)}", flush=True)
     lst = work / f"{plan['name']}_concat.txt"
     lst.write_text("".join(f"file '{p}'\n" for p in parts))
     joined = work / f"{plan['name']}_joined.mp4"
