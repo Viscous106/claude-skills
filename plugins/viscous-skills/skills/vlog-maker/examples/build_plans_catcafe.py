@@ -9,6 +9,7 @@ from pathlib import Path
 edit = Path(__file__).resolve().parents[1]
 
 CREDIT = "Music: Kevin MacLeod (incompetech.com) · CC BY 4.0"
+EDITOR = "Edited and Produced by Yash Virulkar"
 
 
 def clip(src, a, b, **kw):
@@ -60,7 +61,7 @@ yt = [
     {"name": "hook", "music": [{"track": "Fluffing a Duck", "vol": 0.30, "from": 0.0, "fade": 0.8}],
      "segments": [
          clip("GX010288", 93.2, 95.7, vol=0.3, titles=[pop("Aaj ka plan: BILLIYAAN!", 0.15, 2.4, 0.22)]),
-         photo("GOPR0310", 2.0, focus=0.6),
+         photo("GOPR0309", 2.0, focus=0.6, kenburns="out"),
          clip("GX010285", 32.0, 34.5, rotate=90, fit="crop", vol=0.6),
          clip("GX010290", 39.0, 41.8, vol=0.6),
      ]},
@@ -92,7 +93,7 @@ yt = [
              [16.25, 17.55, "Nahi, bahut sahi time hai!"],
          ], 13.0)),
          photo("GOPR0283", 2.0, fit="blur"),
-         clip("GX010275", 38.5, 48.0, titles=[pop("Pehla dost!", 0.4, 2.2, 0.2)],
+         clip("GX010275", 38.5, 48.0, titles=[pop("Pehla dost!", 0.4, 2.2, 0.2), label("Takishi", 6.0, 9.0)],
               subs=rel([[40.88, 42.10, "He's very friendly"]], 38.5)),
          clip("GX010275", 50.5, 58.0, subs=rel([
              [51.08, 51.66, "Takishi"], [52.60, 54.70, "Is it a Japanese name?"]], 50.5)),
@@ -136,7 +137,7 @@ yt = [
      ]},
     {"name": "div_orange", "music": [{"track": "Carefree", "vol": 0.12, "from": 70.0}],
      "segments": [
-         clip("GX010308", 0.0, 13.8, subs=rel([
+         clip("GX010308", 0.0, 13.8, titles=[label("Sheena", 5.4, 8.4)], subs=rel([
              [1.89, 4.31, "It's very casual, so it's rather comfortable over here"],
              [4.71, 6.17, "Sheena wants to sleep..."],
              [6.45, 8.53, "...and she wants me to keep petting her"],
@@ -145,8 +146,7 @@ yt = [
      ]},
     {"name": "adoption", "music": [{"track": "Carefree", "vol": 0.32, "from": 86.0, "fade": 2.0, "extra": 22.1}],
      "segments": [
-         photo("GOPR0309", 2.5, focus=0.6),
-         photo("GOPR0310", 2.2, focus=0.6, kenburns="out"),
+         photo("GOPR0309", 3.5, focus=0.6),
          clip("GX010289", 126.5, 136.5, rotate=-90, fit="crop", vol=0.6),
          photo("GOPR0316", 4.0, fit="blur", titles=[pop("Yahan ki cats adopt bhi kar sakte ho!", 0.4, 3.8, 0.2)]),
      ]},
@@ -156,7 +156,8 @@ yt = [
          clip("GX010319", 0.2, 8.5, vol=0.7, subs=rel([[0.46, 2.2, "Bye bye!"]], 0.2)),
          clip("GX010319", 12.0, 17.0, vol=0.5),
          photo("IMG-20261108-WA0054", 2.6, titles=[pop("Aur haan, pizza bhi mast tha!", 0.2, 2.5, 0.25)]),
-         photo("GOPR0296", 5.0, titles=[{"text": "Thanks for watching!", "sub": CREDIT, "start": 0.3, "end": 4.8}]),
+         photo("GOPR0296", 5.0, titles=[{"text": "Thanks for watching!", "sub": EDITOR, "credits": [CREDIT],
+                                          "start": 0.3, "end": 4.8}]),
      ]},
 ]
 
@@ -171,7 +172,7 @@ reel = [
                                                                  [2.25, 3.9, "cat cafe dekhne!"]]),
          clip("GX010275", 8.2, 8.2 + R(3), fit="crop", focus=0.35, vol=0.3),
          photo("IMG-20261108-WA0019", R(3), focus=0.5),
-         clip("GX010275", 60.0, 60.0 + R(4), fit="crop", focus=0.5, vol=0.4),
+         clip("GX010275", 60.0, 60.0 + R(4), fit="crop", focus=0.5, vol=0.4, titles=[label("Takishi", 0.2, R(4))]),
          clip("GX010285", 35.5, 35.5 + R(4), rotate=90, fit="crop", focus=0.35, vol=0.6),
          clip("GX010288", 20.0, 20.0 + R(5), fit="crop", vol=0.7, subs=[[1.0, 3.0, "Bahut hi cute hai!"]]),
          clip("GX010288", 44.0, 44.0 + R(4), fit="crop", vol=0.3),
@@ -180,13 +181,14 @@ reel = [
          clip("GX010289", 2.0, 2.0 + R(4), fit="crop", vol=0.3),
          clip("GX010289", 65.0, 65.0 + R(4), fit="crop", vol=0.3),
          clip("GX010290", 2.0, 2.0 + R(4), fit="crop", focus=0.45, vol=0.2, titles=[pop("the queen", 0.3, R(4), 0.2)]),
-         clip("GX010308", 5.9, 9.0, fit="crop", focus=0.45, subs=[[0.55, 2.7, "she wants me to keep petting her"]]),
+         clip("GX010308", 5.9, 9.0, fit="crop", focus=0.45, titles=[label("Sheena", 0.1, 2.6)], subs=[[0.55, 2.7, "she wants me to keep petting her"]]),
          photo("GOPR0309", R(4), focus=0.62),
          clip("GX010290", 42.5, 42.5 + R(4), fit="crop", focus=0.8, vol=0.5),
          photo("GOPR0316", R(4), focus=0.5, titles=[pop("Sab adopt kar sakte ho!", 0.2, R(4), 0.18)]),
          clip("GX010319", 5.2, 5.2 + R(4), fit="crop", focus=0.42, vol=0.3),
          clip("GX010319", 12.5, 12.5 + R(5), fit="crop", focus=0.55, fade_out=0.4, vol=0.3,
-              titles=[{"text": "Cat Café Studio", "sub": "ANDHERI WEST · MUMBAI", "start": 0.2, "end": R(5)}]),
+              titles=[{"text": "Cat Café Studio", "sub": "ANDHERI WEST · MUMBAI", "credits": [EDITOR],
+                      "start": 0.2, "end": R(5)}]),
      ]},
 ]
 

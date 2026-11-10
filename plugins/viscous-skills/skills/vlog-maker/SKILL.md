@@ -64,6 +64,29 @@ Sibling skills, load when you reach that phase:
    attribution is mandatory for CC BY tracks), and a list of anything that needs the
    user (e.g. a VO line to record).
 
+## Whole-trip vlogs (many folders, many people)
+
+Worked example: `examples/build_plans_mumbai_trip.py` (15-min YouTube cut + 7 place
+Reels from 9 folders) with `examples/captions_mumbai_trip.py`.
+- Ask first: one trip vlog vs. one per place vs. both; the story order; who is who.
+  For names, number the faces on one group photo (`who_is_who.jpg`) and ask the user to
+  confirm the mapping in a single question — agents' guesses from outfits disagree.
+  Self-introductions on camera ("Hi guys, I am Soham") are the best place for labels.
+- Structure: hook = the emotional peak as a 9 s teaser (e.g. the scream when the result
+  call comes), title card, then chronological chapters, each with its own music cue;
+  the peak scene gets the most time and a custom highlight graphic (see
+  `examples/make_highlight_card.py`).
+- Captions: keep them in one table per source clip (`CAP[path] = [[s, e, text]]`, source
+  time); `clip()` picks the lines inside each segment's window, including VO borrowed via
+  `audio=`. Trimming then never needs caption edits. Lines nobody can make out stay
+  uncaptioned; on-screen Pop text can carry the story there instead.
+- Keep private moments out (sleeping people unless the user OKs it, strangers' faces,
+  copyrighted films on a laptop, forwarded trailers) and bleep swearing with `mute`.
+- Thumbnail: Polaroid collage of 4–6 moments with the hook in big type
+  (`examples/make_thumbnail_collage.py`). Pacifico has no arrow glyph: write "to".
+- Deliverables: the renders, description with chapters (timestamps from the builder's
+  per-chapter printout), one caption per Reel, thumbnail; music credits for every track.
+
 ## Rules learned the hard way
 
 - Transcripts of noisy café/street audio hallucinate repeated lines ("I don't know ×6")

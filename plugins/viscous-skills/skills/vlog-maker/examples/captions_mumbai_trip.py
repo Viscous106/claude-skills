@@ -1,0 +1,233 @@
+"""Captions per source clip, in source-clip seconds: CAP[path] = [[start, end, text], ...].
+
+Hinglish lines are romanised from the Hindi-mode Whisper pass; lines spoken in English (or where the Hindi
+pass only looped) follow the English pass. Lines nobody could make out are left uncaptioned on purpose.
+"""
+TR, GH, JU, GE = "travel/", "Guest House/", "Juhu Beach/", "General/"
+EG, JI, MD, SH, CC = "Eth Global/", "Jio convection/", "Marine drive/", "shayari/", "Cat Cafe/"
+
+
+def gx(folder, n):
+    return f"{folder}GX0{n}_enhanced.mp4"
+
+
+CAP = {
+    # ---- departure, Bengaluru
+    TR + "GX010075.MP4": [
+        [0.3, 3.0, "Hey guys, toh hum jaa rahe hai ETH Hackathon pe"],
+        [3.0, 7.3, "Abhi hum hackathon ke liye nikle hai — cab se, bus ke liye"],
+        [7.3, 9.0, "Toh chalo, sab introduction dete hai"],
+        [9.0, 12.9, "Pehle main Yash, aur ye meri team hai!"],
+        [12.9, 14.6, "Hi bolo guys!"],
+    ],
+    TR + "GX010090.MP4": [
+        [0.85, 4.1, "So guys, abhi hum bus stop pe wait kar rahe hai"],
+        [5.4, 7.0, "Say hi, guys!"],
+    ],
+    TR + "GX010093.MP4": [
+        [0.2, 4.6, "Toh guys, Mumbai gang ready ho chuki hai, aur bus bhi nikal chuki hai"],
+        [4.64, 9.1, "So let's see once again — let me show you everyone"],
+        [9.14, 12.5, "So this is Soham — our smart contract guy"],
+        [12.5, 20.6, "He's made so many smart contracts that Ethereum is asking him to join"],
+        [20.6, 23.3, "Vitalik will be there for sure, shaking his hand!"],
+        [23.3, 27.5, "And this is our orchestration guy"],
+        [27.5, 30.5, "This guy is just doing AI"],
+        [30.8, 33.5, "And here are our two teammates"],
+        [33.5, 35.3, "Can you introduce yourself?"],
+        [35.3, 39.2, "I'm Divija... and Divyanshi!"],
+    ],
+    # ---- guest house
+    gx(GH, 10117): [[1.9, 5.0, "Toh ye hamara guest house ka room hai, Abhinav bhai"]],
+    gx(GH, 10123): [
+        [0.0, 3.3, "So guys, we are ready — abhi hum hackathon ke liye jaane wale hai"],
+        [3.4, 5.9, "Co-founder saab, are you ready?"],
+        [6.4, 7.6, "Bilkul!"],
+    ],
+    gx(GH, 10142): [
+        [0.85, 3.0, "Rate your excitement on a scale of 10!"],
+        [3.0, 4.75, "10 on 10!"],
+        [4.77, 7.1, "Rate your excitement on a scale of 10!"],
+        [7.17, 7.87, "9 on 10"],
+        [7.87, 9.6, "10 on 10!"],
+        [9.6, 10.7, "10 on 10!"],
+        [10.7, 12.2, "Let's go guys!"],
+        [12.25, 14.1, "Sab log bahut excited hai"],
+        [14.1, 16.6, "Let's see, hackathon mein kuch toh hoga..."],
+        [16.6, 18.6, "Stay tuned!"],
+    ],
+    gx(GH, 10131): [
+        [2.96, 8.2, "Guys, we are going to the dining hall in our guest house"],
+        [8.2, 10.6, "...and this is it."],
+    ],
+    GH + "VID-20261108-WA0098.mp4": [
+        [2.16, 5.3, "So guys, this is our room. We just got tea."],
+        [5.3, 8.0, "Enjoy morning tea!"],
+    ],
+    gx(GH, 10273): [
+        [3.1, 5.2, "Today we're leaving — it's the 8th"],
+        [5.2, 9.1, "So before leaving, we'll show you our room — mine and Divija didi's"],
+        [46.8, 49.8, "This is the view"],
+        [49.8, 56.0, "Raat ko lights bahut achhi lagti hai"],
+        [56.0, 61.8, "It looks so pretty"],
+        [114.0, 117.0, "That is it. Bye-bye!"],
+        [117.0, 120.5, "Checking-out vlog!"],
+        [120.5, 123.0, "Bye!"],
+    ],
+    GH + "VID-20261108-WA0148.mp4": [[7.27, 10.4, "Guys, raat ke 1 baj rahe hai!"]],
+    # ---- Juhu
+    gx(JU, 10073): [
+        [1.42, 3.42, "Hum finally beach pe aa chuke hai"],
+        [3.42, 8.7, "Sabse interesting — hamara plan accidentally ban gaya beach aane ka"],
+        [8.7, 13.4, "Aur main itni lucky hoon ki baaki sabne shoes pehne hai"],
+        [13.42, 18.3, "I'm the only one who can enjoy the beach!"],
+        [18.42, 20.3, "Aap sabhi ko kaisa lag raha hai?"],
+        [20.36, 21.4, "Very good!"],
+    ],
+    gx(JU, 10085): [[0.56, 2.2, "Enjoy your chhoti kulfi, you know?"], [5.27, 5.9, "Enjoy!"]],
+    gx(JU, 10115): [
+        [0.21, 3.07, "Ye hai Juhu beach experience..."],
+        [4.21, 5.33, "Ecstatic!"],
+        [6.21, 8.11, "Juhu beach experience..."],
+        [8.11, 10.15, "Okay... okay."],
+    ],
+    gx(GE, 10049): [[11.42, 15.0, "Sir, aapki max speed?"], [15.2, 17.2, "Meri? 2 kilometre per hour!"]],
+    # ---- ETHGlobal
+    gx(EG, 10204): [
+        [0.66, 1.7, "Hi guys!"],
+        [3.06, 6.56, "It's late night. Can you see the timing?"],
+        [8.04, 11.88, "It's 3:12. I'm looking at my gadget"],
+        [14.54, 17.94, "Many people are asleep, many people are awake"],
+        [19.46, 24.66, "We are trying our best to be awake — our whole team"],
+        [24.66, 27.5, "Abhinav, hi!"],
+        [30.29, 31.89, "Yes, Soham"],
+        [33.51, 40.0, "Hi Yash! You want to say hi to the camera?"],
+        [47.13, 49.25, "Yash? Hi!"],
+        [59.69, 61.73, "We have a lot to implement..."],
+        [62.39, 65.65, "...so we are trying to be awake."],
+    ],
+    gx(EG, 10223): [
+        [0.0, 2.0, "Late ho raha hai..."],
+        [6.0, 8.0, "Samajh nahi aa raha"],
+        [15.68, 17.68, "Ye aankhein toh laal ho gayi!"],
+    ],
+    gx(EG, 10234): [
+        [1.71, 3.71, "Babu, uth ja!"],
+        [3.71, 5.71, "Uth ja!"],
+        [7.23, 8.43, "I'm going to sleep..."],
+        [9.25, 10.99, "I'm going to sleep..."],
+        [12.01, 13.23, "I'm going to sleep."],
+    ],
+    gx(EG, 10246): [[1.0, 3.76, "This is the dark chocolate from Kazakhstan"], [4.68, 6.3, "Let's open it!"]],
+    # ---- Marine Drive
+    MD + "VID-20261108-WA0141.mp4": [
+        [9.0, 12.9, "Guys, so we are at Marine Drive, and this is it"],
+        [12.9, 14.46, "So peaceful."],
+        [14.46, 17.8, "So our hackathon ended today"],
+    ],
+    MD + "VID-20261108-WA0146.mp4": [
+        [4.0, 7.0, "So guys, abhi ek bahut badi khushkhabri hai!"],
+        [7.0, 10.0, "Hum Marine Drive aa chuke hai..."],
+        [10.0, 12.0, "...and iske baad humein pata chala"],
+        [12.0, 15.5, "ki hum Arkiv track mein jeet chuke hai!"],
+        [18.04, 21.14, "It's a big deal — we won $1,000!"],
+        [24.92, 25.6, "How are you feeling?"],
+        [26.52, 27.96, "I am [beep] crazy, bro!"],
+        [27.96, 32.54, "Didn't even know we'd get selected... literally crazy"],
+        [32.54, 34.28, "We didn't have any idea!"],
+        [38.7, 40.86, "Didi, how are you feeling?"],
+        [41.3, 42.2, "Amazing!"],
+        [44.76, 50.02, "He is so shocked he can't even speak"],
+        [50.02, 52.52, "See his face once!"],
+        [60.44, 63.58, "So, it was worth it — Mumbai trip!"],
+    ],
+    MD + "VID-20261108-WA0143.mp4": [
+        [0.0, 1.1, "Hi!"],
+        [10.0, 12.0, "Ye itni bakwaas chocolate hai..."],
+        [12.0, 14.0, "Poochho mat, but mujhe itni meethi aur achhi lag rahi hai"],
+        [14.0, 16.0, "Crazy ekdum!"],
+        [16.0, 18.0, "Aur 150 ki — bilkul bhi achhi nahi thi"],
+        [18.0, 22.86, "But mujhe bahut badhiya lagi, pata nahi kyun — kuch toh special hua aaj"],
+        [48.94, 50.94, "Aaj hum camera bhool gaye..."],
+        [50.94, 53.2, "...aur aaj sabse main din hai!"],
+    ],
+    MD + "VID-20261108-WA0149.mp4": [
+        [15.22, 16.76, "So how are you feeling?"],
+        [19.24, 26.68, "It's confirmed — we have won the second place in the Arkiv track"],
+        [26.68, 28.32, "...and we have won $1,000!"],
+        [29.38, 31.26, "How are you feeling as a team leader?"],
+        [41.74, 45.42, "By the way, he has been a great team leader"],
+        [45.86, 47.56, "And I got to learn a lot"],
+        [48.44, 50.5, "Divija didi, how has your experience been?"],
+        [50.66, 53.58, "One thing is confirmed — our group was very, very lucky"],
+        [72.4, 78.2, "Jitne bhi humne khud se paise bhare the Mumbai aane ke..."],
+        [78.2, 79.4, "...ab hum jeet chuke hai"],
+        [80.9, 85.4, "Rehne ka, khaane ka, aane-jaane ka — jitna bhi kharcha hua"],
+        [88.08, 92.22, "So you can say it's become a sponsored trip!"],
+    ],
+    gx(MD, 10321): [
+        [7.22, 8.64, "Mumbai mein aakhri din..."],
+        [8.64, 10.96, "And it was all great"],
+        [11.54, 13.0, "All the good things happened"],
+        [28.6, 30.04, "Good memories from Mumbai"],
+        [30.04, 33.12, "They say Mumbai is a city of dreams"],
+        [33.76, 36.28, "And it's true for us"],
+        [36.28, 39.12, "Marine Drive — yes!"],
+        [39.78, 41.5, "It's like a movie!"],
+    ],
+    # ---- Cat Café (from the Cat Café vlog's verified captions)
+    gx(CC, 10274): [
+        [0.75, 2.85, "Toh guys, basically abhi hum jaa rahe hai"],
+        [2.85, 4.49, "cat cafe dekhne!"],
+        [5.25, 7.87, "Kuch toh cool sa scenario hai wahan par"],
+    ],
+    gx(CC, 10275): [[40.88, 42.10, "He's very friendly"]],
+    gx(CC, 10288): [
+        [13.04, 15.0, "Kaisa laga cat cafe?"], [15.04, 17.0, "Bahut chill hai!"],
+        [19.04, 21.0, "Kaisa laga cat cafe?"], [21.04, 23.0, "Bahut hi cute hai!"],
+        [23.04, 25.0, "Aur ye billi dekho, kitni cute hai ye"],
+    ],
+    gx(CC, 10290): [
+        [0.76, 2.58, "Bhai saab, ye kitni pyaari hai!"], [2.58, 4.52, "Look at this"],
+        [4.52, 8.68, "She's the queen cat"], [8.68, 11.46, "Kitne aesthetic tarike se so rahi hai"],
+    ],
+    gx(CC, 10308): [
+        [1.89, 4.31, "It's very casual, so it's rather comfortable over here"],
+        [4.71, 6.17, "Sheena wants to sleep..."],
+        [6.45, 8.53, "...and she wants me to keep petting her"],
+        [9.65, 10.23, "You see?"],
+    ],
+    gx(CC, 10319): [[0.46, 2.2, "Bye bye!"]],
+    # ---- Jio World
+    JI + "VID-20261107-WA0002.mp4": [[0.02, 5.0, "Guys, ye hai Soham..."], [5.02, 8.0, "He is wearing the Meta glasses!"]],
+    # ---- shayari (sleeper bus). Last words of both poems are uncertain: ask the poets.
+    gx(SH, 10040): [
+        [0.5, 2.86, "Oye ruko, wahi padhne taiyaar ho raha hai"],
+        [2.86, 5.86, "Usse bhi read karne dena chahiye... par cheating ho rahi hai!"],
+    ],
+    gx(SH, 10041): [
+        [1.07, 4.39, "Dua bhi tumhare liye, aur tumse hi ye gila"],
+        [4.57, 8.91, "Agar hum tumhare, aur tum bhi tumhare — to phir humein kya mila?"],
+        [9.27, 12.87, "Ye bechaini, ye kasak, aur dil lagaane ka ye sila"],
+        [15.99, 22.6, "Ab to bas isi aas mein hai chala — ki kam se kam dosti ka rishta hi..."],
+    ],
+    gx(SH, 10038): [
+        [20.83, 23.0, "Waah, waah, waah!"],
+        [23.0, 27.99, "...jab meri pasandida aurat mujhe friend-zone karke chali gayi"],
+        [27.99, 29.99, "Friend zone kya hota hai?"],
+        [29.99, 31.6, "Friend zone!"],
+    ],
+    gx(SH, 10042): [
+        [0.11, 6.57, "Tumhe kabhi poora likhun, ya kabhi adhoora likhun"],
+        [6.57, 9.59, "Kabhi tumhe savera likhun, to kabhi chaand-sitaara likhun"],
+        [9.59, 12.61, "Main likhun dilkashi, to tera muskurana likhun"],
+        [12.61, 16.81, "Main likhun khwaab, to use tera husn likhun"],
+        [16.81, 20.03, "Main likhun ishq, to use tera muskurana likhun"],
+        [20.03, 22.95, "Main likhun tujhpe, to main tumhara aadaab likhun"],
+        [22.95, 26.25, "Main likhun umeed, to main teri aankhein likhun"],
+        [26.25, 29.35, "Main jab bhi likhun, mujhe tera likhun"],
+        [29.35, 35.35, "Likh doon tere baare mein sab kuch, bas tujhe mera na likh sakun"],
+        [35.35, 41.35, "Ek sawaal ye bhi hai — in chand kaagazon mein tujhe kaise likhun"],
+        [41.35, 44.35, "Koi poochhe is rishte ka kya naam likhun..."],
+        [44.35, 47.3, "...to main khud ko aankhein aur tujhe armaan likhun"],
+    ],
+}
