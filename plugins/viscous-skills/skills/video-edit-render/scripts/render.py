@@ -9,8 +9,9 @@ Plan format (times in seconds, source paths relative to the footage folder):
     {"src": "GX010274_enhanced.mp4", "in": 0.5, "out": 4.0,
      "rotate": 0,            # 90 / -90 / 180 to fix sideways footage
      "fit": "blur",          # blur (blurred-fill bars) | crop (fill frame) | pad (black bars)
-     "focus": 0.5,           # horizontal crop centre for fit=crop (0 left .. 1 right)
-     "zoom": 1.0,            # extra punch-in
+     "focus": 0.5,           # horizontal crop centre for fit=crop, or for fit=blur with zoom > 1 (0 left .. 1 right)
+     "zoom": 1.0,            # extra punch-in; with fit=blur, zoom z shows the middle 1/z of a 16:9 source's width
+                             # over the blurred fill (two people side by side / a big selfie face in a Reel)
      "speed": 1.0,           # 2.0 = double speed (audio muted unless keep_audio_on_speed)
      "stabilize": false,     # vid.stab two-pass
      "vol": 1.0,             # clip audio gain; 0 mutes
@@ -64,7 +65,7 @@ def fit_chain(W, H, fit, zoom, focus):
     # blur: sharp foreground over a blurred, darkened copy that fills the frame
     return (f"split[a][b];[a]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
             f"boxblur=40:5,eq=brightness=-0.08[bg];[b]scale={W}*{zoom}:{H}*{zoom}:force_original_aspect_ratio=decrease,"
-            f"crop='min(iw,{W})':'min(ih,{H})'[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1")
+            f"crop='min(iw,{W})':'min(ih,{H})':(iw-ow)*{focus}:(ih-oh)/2[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1")
 
 
 def render_segment(i, seg, plan, draft):
@@ -85,7 +86,7 @@ def render_segment(i, seg, plan, draft):
         vf = (f"scale={W*2}:{H*2}:force_original_aspect_ratio=increase,crop={W*2}:{H*2}:(iw-{W*2})*{focus}:(ih-{H*2})/2,"
               f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={frames}:s={W}x{H}:fps={fps},setsar=1")
         if seg.get("fit") == "blur":
-            vf = f"fps={fps}," + fit_chain(W, H, "blur", 1.0, 0.5)
+            vf = f"fps={fps}," + fit_chain(W, H, "blur", seg.get("zoom", 1.0), seg.get("focus", 0.5))
         sh(["ffmpeg", "-nostdin", "-y", "-v", "error", "-loop", "1", "-t", str(dur), "-i", str(footage / seg["photo"]),
             "-f", "lavfi", "-t", str(dur), "-i", "anullsrc=r=48000:cl=stereo",
             "-filter_complex", f"[0:v]{vf},fade=t=in:d=0.25,fade=t=out:st={dur-0.25}:d=0.25[v]",
@@ -256,7 +257,8 @@ def main():
     # audio: dialogue bed + music tracks (optionally ducked under dialogue) -> loudness normalised
     inputs, fc, mus = ["-i", str(joined)], [], []
     for k, m in enumerate(plan.get("music", [])):
-        inputs += ["-ss", str(m.get("from", 0)), "-t", str(m["dur"]), "-i", str(edit / m["src"])]
+        # -stream_loop: a cue longer than the rest of its track wraps round to the start instead of going silent
+        inputs += ["-stream_loop", "-1", "-ss", str(m.get("from", 0)), "-t", str(m["dur"]), "-i", str(edit / m["src"])]
         f = m.get("fade", 1.5)
         fc.append(f"[{k + 1}:a]aformat=sample_rates=48000:channel_layouts=stereo,volume={m.get('vol', 0.22)},"
                   f"afade=t=in:d={f},afade=t=out:st={m['dur'] - f}:d={f},adelay={int(m.get('at', 0) * 1000)}:all=1[m{k}]")

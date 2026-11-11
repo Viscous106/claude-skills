@@ -44,10 +44,17 @@ Footage spread over several folders (a whole trip): set `VLOG_FOOTAGE=<root>` an
 }
 ```
 - Times in `subs`/`titles` are relative to the segment start; `music.at` is absolute
-  timeline time, `from` is the offset into the track.
+  timeline time, `from` is the offset into the track. A cue longer than the rest of its
+  track loops back to the start (`-stream_loop -1`), so long full-scene chapters never go
+  silent.
 - `fit`: `blur` = foreground fitted over a blurred fill (vertical clip in 16:9 or vice
   versa), `crop` = fill the frame, `focus` 0..1 picks the horizontal crop centre (aim at
   the face/cat), `pad` = black bars.
+  A 16:9 source cropped to 9:16 keeps only ~32 % of its width: two people side by side
+  or a selfie face that drifts will not fit. Use `fit: blur` with `zoom` instead — the
+  foreground shows the middle 1/zoom of the width (positioned by `focus`) over the blurred
+  fill: `zoom: 1.0–1.15` for groups, `1.3–1.5` for two people, `1.8–2.0` for one big face.
+  Photos take the same `fit: blur` + `zoom`/`focus` (no Ken Burns then).
 - `rotate`: 90 / -90 / 180 for GoPro clips shot sideways (check the contact sheet).
 - `speed` ≠ 1 mutes clip audio unless `keep_audio_on_speed`.
 - `audio: {"src", "in", "vol"?}` plays another clip's sound under this picture — a VO line
@@ -104,6 +111,15 @@ Don't run renders while a Whisper job is using every core.
   second before the hero subject appears; a rotated stretch that came out upside down;
   9:16 crops of 16:9 shots where `focus` lands on a wall instead of the person/cat —
   re-pick the moment rather than fight the crop when the subject sits low or at an edge.
+- **Crop audit** (every Reel, and photos in the 16:9 cut):
+  `HAAR=<opencv>/share/opencv4/haarcascades/haarcascade_frontalface_default.xml
+  VLOG_FOOTAGE=<root> scripts/crop_audit.py chk/crop plans/reel_*.json` draws the kept
+  window (yellow) on source frames at 10/50/90 % of every `fit: crop` segment and every
+  cropped photo, and marks faces in green (kept) or red (cut). The face count is only a hint
+  (false hits on posters, misses on profiles) — read the sheets. The QC grid of the render
+  can't show this: it only shows what was kept, never who was cut off. Typical misses: the
+  window sitting in the gap between two people, half a selfie face, a 5-person group photo
+  cut to the middle three, heads at the top edge of a photo that Ken Burns then crops.
 - Re-check the specific fixed spots afterwards with single frames (`-ss T -frames:v 1`).
 - `ffmpeg -i out.mp4 -af ebur128 -f null -` → integrated loudness ≈ −14 LUFS.
 - `python3 scripts/peaks.py out.mp4 …` → max sample peak and the seconds above −1 dBFS,
