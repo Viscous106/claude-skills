@@ -14,7 +14,12 @@ render.py plans/youtube.json [--subs on|off] [--titles on|off] [--draft] [--jobs
 Writes `edit/renders/<name>[_nocaptions][_draft].mp4`. Per-segment intermediates are
 cached in `edit/build/` by a hash of the segment's *picture and sound* + output size
 (`subs`/`titles` are excluded — they are burned in at the final pass), so caption and
-title edits never re-encode segments. `--draft` = ultrafast encode, no stabilisation: use
+title edits never re-encode segments. Segments are written to `*.part.mp4` and renamed when
+complete. Older copies wrote straight to the cache name, so a killed render left half-files
+that later runs reused: if a render was ever killed, ffprobe every `build/*_NNN_*.mp4` and
+delete the unreadable ones. To stop a render started with `setsid`, kill its whole process
+group (`kill -- -PGID`): killing only the Python process leaves its ffmpeg workers running,
+and the shell script moves on to the next render. `--draft` = ultrafast encode, no stabilisation: use
 it for every iteration, final render only at the end. `--jobs 4` renders segments in
 parallel (a 120-segment trip vlog drafts in a few minutes instead of half an hour).
 
@@ -75,13 +80,19 @@ Footage spread over several folders (a whole trip): set `VLOG_FOOTAGE=<root>` an
 
 ## What the final pass does
 
-1. concat the cached segments (all are re-encoded to identical codec/fps/size/48 kHz
-   stereo, so the concat demuxer with `-c copy` is safe);
-2. **audio-only pass → wav**: music tracks are trimmed, faded, delayed to `at`, mixed,
+1. concat the cached segments' video (all are re-encoded to identical codec/fps/size/48 kHz
+   stereo, so the concat demuxer with `-c copy` is safe for the picture);
+2. **dialogue bed**: each segment's sound is decoded on its own to PCM, padded or cut to that
+   segment's container duration (its slot in the concat), and the WAVs are joined. Never decode the
+   audio of the `-c copy` join: every AAC segment brings ~21–43 ms of priming/padding, so the sound
+   drifted later and later, 3.5 s by the end of a 112-segment cut. Use the container duration, not
+   the video stream's: a source clip that ends before the planned out-point leaves its picture a few
+   frames short, and the join keeps that gap;
+3. **audio-only pass → wav**: music tracks are trimmed, faded, delayed to `at`, mixed,
    padded to the exact timeline length, ducked with `sidechaincompress` keyed on the
    dialogue bed, then two-pass `loudnorm` to −14 LUFS / −1.5 dBTP. Cached by a hash of the
    graph, so the captions/no-captions renders share it;
-3. **video pass**: burn the generated `.ass` (subs on/off, titles on/off), mux the wav,
+4. **video pass**: burn the generated `.ass` (subs on/off, titles on/off), mux the wav,
    x264 CRF 18 `-preset slow`, `+faststart`.
 
 Two deadlocks this design avoids (both looked like ffmpeg "hanging" at ~15 % CPU with a
@@ -121,6 +132,11 @@ Don't run renders while a Whisper job is using every core.
   window sitting in the gap between two people, half a selfie face, a 5-person group photo
   cut to the middle three, heads at the top edge of a photo that Ken Burns then crops.
 - Re-check the specific fixed spots afterwards with single frames (`-ss T -frames:v 1`).
+- **Lip sync**: `VLOG_FOOTAGE=<root> scripts/sync_check.py plans/x.json renders/x.mp4 8` finds each
+  sampled segment's own sound in the render and prints the lag (+ = sound late). Every row should be
+  within ±0.04 s. A lag that grows along the timeline means the dialogue bed drifts. A constant
+  offset that starts at one segment means that segment's picture and sound lengths differ. The
+  frame grids can't show either problem.
 - `ffmpeg -i out.mp4 -af ebur128 -f null -` → integrated loudness ≈ −14 LUFS.
 - `python3 scripts/peaks.py out.mp4 …` → max sample peak and the seconds above −1 dBFS,
   measured on the **decoded mp4**, not the wav. A loud music hit squashed against the

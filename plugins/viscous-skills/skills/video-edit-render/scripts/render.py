@@ -75,6 +75,7 @@ def render_segment(i, seg, plan, draft):
     out = work / f"{plan['name']}_{i:03d}_{key}.mp4"
     if out.exists():
         return out
+    part = out.with_name(out.stem + ".part.mp4")  # renamed when complete: a killed render never leaves a cached half-file
     enc = ["-c:v", "libx264", "-preset", "ultrafast" if draft else "medium", "-crf", "28" if draft else "18",
            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2"]
 
@@ -90,7 +91,8 @@ def render_segment(i, seg, plan, draft):
         sh(["ffmpeg", "-nostdin", "-y", "-v", "error", "-loop", "1", "-t", str(dur), "-i", str(footage / seg["photo"]),
             "-f", "lavfi", "-t", str(dur), "-i", "anullsrc=r=48000:cl=stereo",
             "-filter_complex", f"[0:v]{vf},fade=t=in:d=0.25,fade=t=out:st={dur-0.25}:d=0.25[v]",
-            "-map", "[v]", "-map", "1:a", "-t", str(dur), "-r", str(fps), *enc, str(out)])
+            "-map", "[v]", "-map", "1:a", "-t", str(dur), "-r", str(fps), *enc, str(part)])
+        part.replace(out)
         return out
 
     src = footage / seg["src"]
@@ -148,8 +150,27 @@ def render_segment(i, seg, plan, draft):
         ain = ["-f", "lavfi", "-t", str(dur), "-i", "anullsrc=r=48000:cl=stereo"]
     fc = vf + (";" + af if af else "")
     sh(["ffmpeg", "-nostdin", "-y", "-v", "error", "-ss", str(t0), "-to", str(t1), "-i", str(src), *ain,
-        "-filter_complex", fc, "-map", "[v]", *amap, "-t", str(dur), "-r", str(fps), *enc, str(out)])
+        "-filter_complex", fc, "-map", "[v]", *amap, "-t", str(dur), "-r", str(fps), *enc, str(part)])
+    part.replace(out)
     return out
+
+
+def segment_wav(part):
+    """A segment's sound as 48 kHz stereo PCM, exactly as long as the slot the concat demuxer gives the segment.
+
+    That slot is the container duration, not the video stream's: when a source clip ends before the planned
+    out-point the picture is a few frames short, the join leaves that gap, and the sound must keep it too.
+    """
+    wav = part.with_name(part.stem + ".slot.wav")
+    if wav.exists():
+        return wav
+    vdur = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                           "-of", "csv=p=0", str(part)], capture_output=True, text=True).stdout.strip()
+    tmp = wav.with_name(wav.stem + ".part.wav")
+    sh(["ffmpeg", "-nostdin", "-y", "-v", "error", "-i", str(part), "-map", "0:a:0",
+        "-af", f"aresample=48000,apad,atrim=0:{vdur}", "-ac", "2", "-c:a", "pcm_s16le", str(tmp)])
+    tmp.replace(wav)
+    return wav
 
 
 def seg_duration(seg):
@@ -250,12 +271,22 @@ def main():
     lst.write_text("".join(f"file '{p}'\n" for p in parts))
     joined = work / f"{plan['name']}_joined.mp4"
     sh(["ffmpeg", "-nostdin", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(joined)])
+    # Dialogue bed: never decode the audio of the stream-copied join. Every AAC segment carries ~21-43 ms of
+    # encoder priming/padding that the concat keeps, so the sound drifted later and later (3.5 s by the end
+    # of a 112-segment cut). Instead each segment's audio is decoded on its own, cut/padded to exactly its
+    # picture length, and the PCM pieces are joined sample-exact.
+    with ThreadPoolExecutor(max_workers=a.jobs) as pool:
+        wavs = list(pool.map(segment_wav, parts))
+    wlst = work / f"{plan['name']}_dlg_concat.txt"
+    wlst.write_text("".join(f"file '{w}'\n" for w in wavs))
+    dlg = work / f"{plan['name']}_dialogue.wav"
+    sh(["ffmpeg", "-nostdin", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(wlst), "-c", "copy", str(dlg)])
 
     ass = work / f"{plan['name']}_{a.subs}{a.titles}.ass"
     total = write_ass(plan, ass, a.subs == "on", a.titles == "on")
 
     # audio: dialogue bed + music tracks (optionally ducked under dialogue) -> loudness normalised
-    inputs, fc, mus = ["-i", str(joined)], [], []
+    inputs, fc, mus = ["-i", str(dlg)], [], []
     for k, m in enumerate(plan.get("music", [])):
         # -stream_loop: a cue longer than the rest of its track wraps round to the start instead of going silent
         inputs += ["-stream_loop", "-1", "-ss", str(m.get("from", 0)), "-t", str(m["dur"]), "-i", str(edit / m["src"])]
@@ -278,7 +309,7 @@ def main():
         fc.append("[0:a]anull[mix]")
     # 1) audio-only pass -> wav. Mixing 8 audio inputs and the video in one graph stalls ffmpeg's
     #    interleaving, so the mix is rendered on its own and muxed afterwards (also reused across subs on/off).
-    mix_key = hashlib.sha1(";".join(fc + inputs + [str(a.draft)]).encode()).hexdigest()[:10]
+    mix_key = hashlib.sha1(";".join(fc + inputs + [str(a.draft), wlst.read_text()]).encode()).hexdigest()[:10]
     mixed = work / f"{plan['name']}_mix_{mix_key}.wav"
     if not mixed.exists():
         measure = ";".join(fc + ["[mix]loudnorm=I=-14:TP=-2.0:LRA=11:print_format=json[aout]"])
