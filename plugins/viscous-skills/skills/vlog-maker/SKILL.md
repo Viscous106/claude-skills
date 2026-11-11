@@ -68,8 +68,9 @@ Sibling skills, load when you reach that phase:
 
 ## Whole-trip vlogs (many folders, many people)
 
-Worked example: `examples/build_plans_mumbai_trip.py` (15-min YouTube cut + 7 place
-Reels from 9 folders) with `examples/captions_mumbai_trip.py`.
+Worked example: `examples/build_plans_mumbai_trip.py` (27-min YouTube cut + 7 place
+Reels from 9 folders) with `examples/captions_mumbai_trip.py` and
+`examples/captions_en_mumbai_trip.py` (copy them as `captions.py` / `captions_en.py`).
 - Ask first: one trip vlog vs. one per place vs. both; the story order; who is who.
   For names, number the faces on one group photo (`who_is_who.jpg`) and ask the user to
   confirm the mapping in a single question — agents' guesses from outfits disagree.
@@ -80,11 +81,21 @@ Reels from 9 folders) with `examples/captions_mumbai_trip.py`.
   `examples/make_highlight_card.py`).
 - Captions: keep them in one table per source clip (`CAP[path] = [[s, e, text]]`, source
   time); `clip()` picks the lines inside each segment's window, including VO borrowed via
-  `audio=`. Trimming then never needs caption edits. Lines nobody can make out stay
+  `audio=`. Trimming then never needs caption edits. Ask early whether captions should be in
+  the spoken Hinglish or in English: the Mumbai user switched to English after the first full
+  cut. Keep `CAP` as spoken and add an `EN` map (`examples/captions_en_mumbai_trip.py`) that
+  `clip()` applies, skipping clips whose lines must stay as said (poetry, songs). Lines nobody can make out stay
   uncaptioned; on-screen Pop text can carry the story there instead.
 - Play self-introduction clips whole in the long cut (every member's "Hi guys, I am…" and
   the "stay tuned" sign-off), even with a few shaky seconds — users miss them when trimmed
   to the first speaker, and the name labels belong on those intros.
+- Before moving a clip's audio onto b-roll because the log calls its picture weak, look at
+  the clip yourself at 2 fps. A log once called a walking clip "path shot, finger in the
+  corner" when every member turned to the camera to give their rating; the cut showed only
+  the first two, and the user asked for everyone's answer with their face.
+- Voice-only clips (camera on a window, speaker off screen): ask whose voice it is. A second
+  recitation of the same poem was taken for the on-screen reciter's take and replaced with his
+  audio, which hid that a different friend recited it.
 - Reels: run the crop audit (`video-edit-render`) before the final render; groups and
   moving selfie faces get `fit: blur` + `zoom`, not `fit: crop`.
 - Keep private moments out (sleeping people unless the user OKs it, strangers' faces,

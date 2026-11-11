@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from captions import CAP
+from captions_en import EN, TITLE_EN  # captions are English except the shayari (Hinglish poems)
 
 edit = Path(__file__).resolve().parents[1]
 
@@ -22,7 +23,8 @@ def clip(src, a, b, cap=True, audio=None, **kw):
     if cap:
         csrc, c0 = (audio[0], audio[1]) if audio else (src, a)
         span = (b - a) / kw.get("speed", 1.0)
-        subs = [[round(s - c0, 2), round(e - c0, 2), t] for s, e, t in CAP.get(csrc, [])
+        en = (lambda t: t) if csrc.startswith("shayari/") else (lambda t: EN.get(t, t))
+        subs = [[round(s - c0, 2), round(e - c0, 2), en(t)] for s, e, t in CAP.get(csrc, [])
                 if s >= c0 - 0.3 and s < c0 + span - 0.4]
         if subs:
             seg["subs"] = [[max(s, 0), min(e, span), t] for s, e, t in subs]
@@ -70,6 +72,11 @@ def assemble(name, w, h, chapters):
                           "from": m.get("from", 0), "dur": round(length - m.get("offset", 0), 2),
                           "vol": m["vol"], "fade": m.get("fade", 1.2)})
         print(f"  {ch['name']:<14} {start:7.1f} → {t:7.1f}  ({t - start:5.1f}s)")
+    for s in segs:  # on-screen text in English as well
+        for ti in s.get("titles", []):
+            for k in ("text", "sub"):
+                if ti.get(k) in TITLE_EN:
+                    ti[k] = TITLE_EN[ti[k]]
     plan = {"name": name, "width": w, "height": h, "fps": 30, "duck": True, "segments": segs, "music": music}
     (edit / "plans").mkdir(exist_ok=True)
     (edit / "plans" / f"{name}.json").write_text(json.dumps(plan, indent=1, ensure_ascii=False))
@@ -103,10 +110,12 @@ yt = [
          clip(GE + "b0925541a84ad47f742431fcb83a402bdbe49f5c9aed5514350f53bdbdd6d869.mp4", 0.0, 5.0, vol=0,
               titles=[pop("4 din pehle...", 0.2, 2.2, 0.2)]),
          clip(TR + "GX010075.MP4", 0.0, 15.0, titles=[label("Yash", 9.0, 12.9)]),  # ends on "Hi bolo guys!"
-         # the bird got Yash's tee on the way (GX010085), then Div tells the story at the bus stand
+         # Div tells the bird story at the bus stand; the bird clip (GX010085) and photo come right after
+         # "isko apni shirt badalni padi", then she goes on with the good-luck part
+         clip(TR + "GX010090.MP4", 0.8, 17.1),
          clip(TR + "GX010085.MP4", 0.0, 1.9, titles=[pop("Chidiya ne beat kar di!", 0.3, 3.9, 0.2)]),
          photo(GFX + "bird_hold.jpg", 2.0, kenburns="in"),
-         clip(TR + "GX010090.MP4", 0.8, 31.0, titles=[pop("Shubh sanket?!", 10.2, 13.5, 0.2)]),
+         clip(TR + "GX010090.MP4", 17.1, 31.0, titles=[pop("Shubh sanket?!", 0.6, 3.9, 0.2)]),
          clip(TR + "GX010093.MP4", 0.2, 39.3, titles=[label("Soham", 9.0, 13.0), label("Abhinav", 23.4, 27.6),
                                                       label("Divija & Div", 33.2, 37.8)]),
          clip(TR + "GX010093.MP4", 43.5, 52.8, rotate=-90),
@@ -116,13 +125,13 @@ yt = [
          clip(TR + "VID-20261108-WA0118.mp4", 6.6, 8.9, vol=0.2),
          clip(gx(TR, 10027), 0.0, 17.3),
          clip(TR + "VID-20261108-WA0147.mp4", 24.5, 51.0),
-         clip(gx(SH, 10040), 0.5, 20.4, titles=[pop("Bus mein shayari session", 0.2, 2.6, 0.18)]),
-         clip(gx(SH, 10041), 1.0, 11.3),
-         # the rest of the take is on 041's sound; its picture swings to a stranger, so it plays over the
-         # window view from 038 (nobody on screen talking -> no lip-sync mismatch)
-         clip(gx(SH, 10038), 0.4, 11.8, audio=(gx(SH, 10041), 11.3)),
+         clip(gx(SH, 10040), 0.5, 20.4, titles=[pop("Bus mein shayari session", 0.2, 2.6, 0.18), label("Soham", 3.0, 6.0)]),
+         # Div recites the first poem (voice only: 038 is the window view with her own sound); all poems by Yash
+         clip(gx(SH, 10038), 0.4, 20.4, titles=[pop("Ab Div ki baari", 0.2, 2.6, 0.22), label("Div", 0.4, 3.4)]),
          clip(gx(SH, 10038), 20.4, 34.3, titles=[pop("FRIEND-ZONED!", 1.0, 4.0, 0.22)]),
-         clip(gx(SH, 10042), 0.1, 47.3, titles=[pop("Shayari, part 2", 0.3, 2.8, 0.18)]),
+         clip(gx(SH, 10042), 0.1, 47.3, titles=[pop("Shayari, part 2", 0.3, 2.8, 0.18), label("Yash", 0.4, 3.4),
+                                                {"text": "Shayaris written by Yash", "sub": "SLEEPER BUS SHAYARI",
+                                                 "start": 42.6, "end": 47.1}]),
      ]},
     {"name": "dawn", "music": [{"track": "Easy Lemon", "vol": 0.22, "fade": 1.5}],
      "segments": [
@@ -169,9 +178,9 @@ yt = [
      "segments": [
          clip(GH + "VID-20261108-WA0098.mp4", 2.0, 41.0),
          clip(gx(GH, 10131), 9.0, 17.3, audio=(gx(GH, 10131), 2.9)),
-         clip(gx(GH, 10142), 0.6, 7.3),
-         clip(gx(GH, 10131), 26.9, 38.4, audio=(gx(GH, 10142), 7.3)),
-         clip(gx(GH, 10123), 0.0, 12.9, rotate=90),
+         clip(gx(GH, 10142), 0.6, 12.2),
+         clip(gx(GH, 10131), 26.9, 33.5, audio=(gx(GH, 10142), 12.2)),
+         clip(gx(GH, 10123), 0.0, 12.9, rotate=90, mute=[[7.52, 8.3]]),  # bleep
          clip(gx(TR, 10161), 0.0, 4.0, vol=0.2),
          clip(gx(TR, 10167), 22.4, 27.0, vol=0.2, titles=[pop("BKC", 0.3, 3.5, 0.22)]),
      ]},
@@ -237,7 +246,7 @@ yt = [
          clip(MD + "VID-20261108-WA0143.mp4", SPECIAL[0], SPECIAL[1]),  # "...kuch toh special hua aaj"
          clip(MD + "VID-20261108-WA0146.mp4", 0.0, 22.0),               # Div: "hum jeet chuke hai!"
          clip(MD + "VID-20261108-WA0146.mp4", 22.5, 35.0, mute=[[4.5, 5.6]]),
-         clip(MD + "VID-20261108-WA0146.mp4", 35.0, 53.0),
+         clip(MD + "VID-20261108-WA0146.mp4", 35.0, 42.8),  # stops after "Amazing!": the "so shocked he can't even speak" bit is out
          clip(MD + "VID-20261108-WA0143.mp4", 48.8, 72.5),
          clip(MD + "VID-20261108-WA0149.mp4", 0.0, 72.0),  # 72-93 is about the money (sponsored): left out
          photo(MD + "IMG-20261108-WA0061_enhanced.png", 3.0),
@@ -304,9 +313,10 @@ reel_travel = [
         clip(GE + "b0925541a84ad47f742431fcb83a402bdbe49f5c9aed5514350f53bdbdd6d869.mp4", 0.0, 3.0, vol=0, **C,
              titles=[pop("Bengaluru → Mumbai", 0.2, 2.9, 0.18)]),
         clip(TR + "GX010075.MP4", 0.0, 15.0, **B(1.4, 0.2), titles=[label("Yash", 9.0, 12.9)]),
+        clip(TR + "GX010090.MP4", 0.8, 17.1, **B(1.15, 0.5)),
         clip(TR + "GX010085.MP4", 0.0, 1.9, **B(1.3, 0.4), titles=[pop("Chidiya ne beat kar di!", 0.3, 3.3, 0.30)]),
         photo(GFX + "bird_hold.jpg", 1.5, fit="blur", zoom=1.3, focus=0.4),
-        clip(TR + "GX010090.MP4", 0.8, 24.0, **B(1.15, 0.5), titles=[pop("Shubh sanket?!", 10.2, 13.5, 0.30)]),
+        clip(TR + "GX010090.MP4", 17.1, 24.0, **B(1.15, 0.5), titles=[pop("Shubh sanket?!", 0.6, 3.9, 0.30)]),
         clip(TR + "GX010093.MP4", 0.2, 4.6, **B(1.3, 0.5)),
         clip(TR + "GX010093.MP4", 9.0, 30.5, **B(1.3, 0.45), titles=[label("Soham", 0.0, 4.0), label("Abhinav", 14.4, 18.6)]),
         clip(TR + "GX010093.MP4", 33.5, 39.2, **B(1.3, 0.5), titles=[label("Divija & Div", 0.2, 5.0)]),
@@ -410,9 +420,9 @@ reel_guesthouse = [
         photo(GH + "GOPR0137_enhanced.png", 0.8, focus=0.0),
         photo(GH + "GOPR0134_enhanced.png", 0.8, focus=1.0),
         photo(GH + "GOPR0136_enhanced.png", 0.8, focus=0.5),
-        clip(gx(GH, 10142), 0.6, 7.3, **C),
-        clip(gx(GH, 10131), 26.9, 38.4, focus=0.5, audio=(gx(GH, 10142), 7.3), **C),
-        clip(gx(GH, 10123), 0.0, 12.9, rotate=90, focus=0.4, **C, titles=[pop("Hackathon mode: ON", 8.5, 12.5, 0.30)]),
+        clip(gx(GH, 10142), 0.6, 12.2, **C),
+        clip(gx(GH, 10131), 26.9, 33.5, focus=0.5, audio=(gx(GH, 10142), 12.2), **C),
+        clip(gx(GH, 10123), 0.0, 12.9, rotate=90, mute=[[7.52, 8.3]], focus=0.4, **C, titles=[pop("Hackathon mode: ON", 8.5, 12.5, 0.30)]),
         clip(GH + "Snapchat-1984466552.mp4", 0.0, 12.0, vol=0.5, cap=False, **C),
         clip(GH + "VID-20261108-WA0148.mp4", 6.0, 43.9, **B(1.2, 0.5), titles=[pop("1 AM: celebration waffles", 0.2, 4.0, 0.30)]),
         clip(GH + "VID-20261108-WA0148.mp4", 46.5, 50.2, **B(1.2, 0.5)),
@@ -436,7 +446,7 @@ reel_marine = [
         clip(MD + "VID-20261108-WA0146.mp4", 0.0, 14.0, **B(2.0, 0.1)),
         clip(MD + "VID-20261108-WA0146.mp4", 14.0, 22.5, **B(2.0, 0.25)),
         clip(MD + "VID-20261108-WA0146.mp4", 22.5, 35.0, mute=[[4.5, 5.6]], **B(2.0, 0.3)),
-        clip(MD + "VID-20261108-WA0146.mp4", 35.0, 53.0, **B(1.15, 0.4)),
+        clip(MD + "VID-20261108-WA0146.mp4", 35.0, 42.8, **B(1.15, 0.4)),  # stops after "Amazing!": the "so shocked he can't even speak" bit is out
         clip(MD + "VID-20261108-WA0149.mp4", 15.0, 31.4, **B(1.2, 0.35)),
         clip(MD + "VID-20261108-WA0149.mp4", 41.5, 53.8, **B(1.3, 0.5)),
         clip(MD + "VID-20261108-WA0149.mp4", 53.8, 64.4, **B(1.05, 0.5)),
@@ -446,13 +456,18 @@ reel_marine = [
 ]
 
 reel_shayari = [
+    # all poems written by Yash: Soham fumbles the first one, Div recites it (voice only: 038 is the window
+    # view with her own sound), then Yash reads the second from his diary
     {"name": "reel", "music": [{"track": "Meditation Impromptu 01", "vol": 0.10, "fade": 1.5}], "segments": [
-        clip(gx(SH, 10040), 0.5, 20.4, **B(1.3, 0.5), titles=[pop("Sleeper bus shayari", 0.2, 2.8, 0.18)]),
-        clip(gx(SH, 10041), 1.0, 11.3, **B(1.3, 0.5)),
-        clip(gx(SH, 10038), 0.4, 11.8, focus=0.5, audio=(gx(SH, 10041), 11.3), **C),
+        clip(gx(SH, 10040), 0.5, 20.4, **B(1.3, 0.5),
+             titles=[pop("Sleeper bus shayari", 0.2, 2.8, 0.18), label("Soham", 3.0, 6.0)]),
+        clip(gx(SH, 10038), 0.4, 20.4, focus=0.5, **C,
+             titles=[pop("Ab Div ki baari", 0.2, 2.6, 0.30), label("Div", 0.4, 3.4)]),
         clip(gx(SH, 10038), 20.4, 34.3, focus=0.5, **C, titles=[pop("FRIEND-ZONED!", 1.0, 4.0, 0.30)]),
-        clip(gx(SH, 10042), 0.1, 42.0, focus=0.5, **C, titles=[pop("Shayari, part 2", 0.3, 2.8, 0.30)]),
-        clip(gx(SH, 10042), 42.9, 44.0, speed=0.2, focus=0.5, audio=(gx(SH, 10042), 42.0), fade_out=0.6, **C),
+        clip(gx(SH, 10042), 0.1, 42.0, focus=0.5, **C,
+             titles=[pop("Shayari, part 2", 0.3, 2.8, 0.30), label("Yash", 0.4, 3.4)]),
+        clip(gx(SH, 10042), 42.9, 44.0, speed=0.2, focus=0.5, audio=(gx(SH, 10042), 42.0), fade_out=0.6, **C,
+             titles=[{**end_card("Shayaris written by Yash", "SLEEPER BUS · MUMBAI TRIP"), "end": 5.5}]),
     ]},
 ]
 

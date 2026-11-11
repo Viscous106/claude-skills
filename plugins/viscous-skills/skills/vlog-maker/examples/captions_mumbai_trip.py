@@ -54,7 +54,8 @@ CAP = {
     gx(GH, 10123): [
         [0.0, 3.3, "So guys, we are ready — abhi hum hackathon ke liye jaane wale hai"],
         [3.4, 5.9, "Co-founder saab, are you ready?"],
-        [6.4, 7.6, "Bilkul!"],
+        [6.4, 7.5, "Bilkul!"],
+        [7.55, 9.1, "[beep] faadni hai!"],
     ],
     gx(GH, 10142): [
         [0.85, 3.0, "Rate your excitement on a scale of 10!"],
@@ -248,6 +249,13 @@ CAP = {
 # ---- full-scene pass (Nov 10): lines for the parts of clips that the first cut trimmed away.
 # Words from large-v3 / turbo in Hindi mode, meaning checked against the English pass; unclear lines left out.
 EXTRA = {
+    # Div reciting the first poem (voice only, window view); words from large-v3 Hindi, last word unclear
+    gx(SH, 10038): [
+        [0.43, 5.97, "Dua bhi tumhare liye, aur tumse hi ye gila"],
+        [5.97, 13.59, "Agar tum tumhare, aur hum bhi tumhare — to phir humein kya mila?"],
+        [13.59, 16.99, "Ye bechaini, ye kasak, aur dil lagaane ka ye sila"],
+        [16.99, 20.6, "Ab to bas isi aas mein hai chala — ki kam se kam dosti ka rishta hi..."],
+    ],
     TR + "GX010090.MP4": [
         [10.54, 14.0, "Pata hai, is wale bande ke upar na abhi chidiya ne beat kari..."],
         [14.0, 17.54, "...isko apni shirt badalni padi!"],
@@ -350,7 +358,7 @@ EXTRA = {
     gx(SH, 10040): [
         [5.86, 13.0, "Ye kya hai — jab main unse umeed chhodne ke baad phir se unhi ke khayal mein padta hoon"],
         [13.0, 15.34, "Arre yaar, wo tu chhod na — tu neeche dekh"],
-        [15.34, 20.18, "Ek baar read maan le, toh uske baad shuru kare"],
+        [15.34, 20.18, "Meko ek baar read karne do..."],
     ],
     JI + "VID-20261107-WA0001.mp4": [
         [0.0, 8.16, "Toh guys, ghoomte-phirte abhi hum Nita Mukesh Ambani Cultural Centre mein hai"],
