@@ -100,6 +100,11 @@ Keep one work dir for the trip and name every derived file `<Folder>__<stem>` (s
   Hindi mode loops (`कर दो कर दो…`) on noisy stretches — take the words from it where
   it's clean and the timings/meaning from the English pass.
 
+- `scripts/plan_coverage.py plans/<cut>.json` lists, per source clip, the windows the plan
+  uses and the transcript speech left outside them — the quickest way to find scenes that
+  were trimmed mid-conversation. Don't name a script after a stdlib/pip module
+  (`coverage.py` broke numba's `import coverage` inside faster-whisper).
+
 Process hygiene: never `pkill -f <pattern>` in the same shell command whose own text
 contains the pattern — it kills your own shell (exit 144). Kill by PID from `pgrep -a`.
 
