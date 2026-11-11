@@ -71,6 +71,10 @@ def fit_chain(W, H, fit, zoom, focus):
 def render_segment(i, seg, plan, draft):
     W, H, fps = plan["width"], plan["height"], plan["fps"]
     pic = {k: v for k, v in seg.items() if k not in ("subs", "titles")}  # burned in later, not part of the segment
+    dur = seg_duration(seg, fps)
+    raw = seg.get("dur", 2.5) if "photo" in seg else (seg["out"] - seg["in"]) / seg.get("speed", 1.0)
+    if abs(raw - dur) > 1e-6:  # frame-rounded length: segments cached before the rounding must not be reused
+        pic["_frames"] = round(dur * fps)
     key = hashlib.sha1(json.dumps([pic, W, H, fps, draft], sort_keys=True).encode()).hexdigest()[:10]
     out = work / f"{plan['name']}_{i:03d}_{key}.mp4"
     if out.exists():
@@ -80,8 +84,7 @@ def render_segment(i, seg, plan, draft):
            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2"]
 
     if "photo" in seg:
-        dur = seg.get("dur", 2.5)
-        frames = int(dur * fps)
+        frames = round(dur * fps)
         z = "min(1+0.0009*on,1.15)" if seg.get("kenburns", "in") == "in" else "max(1.15-0.0009*on,1)"
         focus = seg.get("focus", 0.5)
         vf = (f"scale={W*2}:{H*2}:force_original_aspect_ratio=increase,crop={W*2}:{H*2}:(iw-{W*2})*{focus}:(ih-{H*2})/2,"
@@ -98,7 +101,6 @@ def render_segment(i, seg, plan, draft):
     src = footage / seg["src"]
     t0, t1 = seg["in"], seg["out"]
     speed = seg.get("speed", 1.0)
-    dur = (t1 - t0) / speed
     pre = []
     rot = seg.get("rotate", 0)
     if rot == 90:
@@ -126,7 +128,7 @@ def render_segment(i, seg, plan, draft):
         vf += f",fade=t=in:d={fi}"
     if fo:
         vf += f",fade=t=out:st={dur - fo}:d={fo}"
-    vf += "[v]"
+    vf += ",tpad=stop_mode=clone:stop_duration=1[v]"  # a source that ends early holds its last frame to the full length
 
     vol = seg.get("vol", 1.0)
     if speed != 1.0 and not seg.get("keep_audio_on_speed"):
@@ -173,10 +175,14 @@ def segment_wav(part):
     return wav
 
 
-def seg_duration(seg):
-    if "photo" in seg:
-        return seg.get("dur", 2.5)
-    return (seg["out"] - seg["in"]) / seg.get("speed", 1.0)
+def seg_duration(seg, fps=30):
+    """Segment length rounded to whole frames: picture and sound get exactly this many frames' worth.
+
+    A beat-cut length like 2.508 s would otherwise give 75 frames (2.500 s) of picture but 2.508 s of sound,
+    and the final constant-frame-rate encode drops those sub-frame gaps: the sound drifted later shot by shot.
+    """
+    raw = seg.get("dur", 2.5) if "photo" in seg else (seg["out"] - seg["in"]) / seg.get("speed", 1.0)
+    return round(raw * fps) / fps
 
 
 def ass_time(t):
@@ -211,7 +217,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
     lines, t = [], 0.0
     for seg in plan["segments"]:
-        d = seg_duration(seg)
+        d = seg_duration(seg, plan["fps"])
         if subs_on:
             for s, e, text in seg.get("subs", []):
                 lines.append(f"Dialogue: 0,{ass_time(t + s)},{ass_time(t + min(e, d))},Sub,,0,0,0,,{text}")

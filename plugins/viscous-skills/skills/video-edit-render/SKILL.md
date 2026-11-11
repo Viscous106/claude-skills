@@ -87,7 +87,10 @@ Footage spread over several folders (a whole trip): set `VLOG_FOOTAGE=<root>` an
    audio of the `-c copy` join: every AAC segment brings ~21–43 ms of priming/padding, so the sound
    drifted later and later, 3.5 s by the end of a 112-segment cut. Use the container duration, not
    the video stream's: a source clip that ends before the planned out-point leaves its picture a few
-   frames short, and the join keeps that gap;
+   frames short, and the join keeps that gap. Every segment's length is also rounded to whole frames
+   (`seg_duration`), with the last frame held (`tpad`) if the source runs out. A beat-cut length like
+   2.508 s otherwise gets 2.500 s of picture and 2.508 s of sound. The constant-frame-rate encode drops
+   the sub-frame gaps, which put a 19-shot Reel 0.16 s out by the middle;
 3. **audio-only pass → wav**: music tracks are trimmed, faded, delayed to `at`, mixed,
    padded to the exact timeline length, ducked with `sidechaincompress` keyed on the
    dialogue bed, then two-pass `loudnorm` to −14 LUFS / −1.5 dBTP. Cached by a hash of the

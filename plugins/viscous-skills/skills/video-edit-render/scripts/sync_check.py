@@ -31,7 +31,8 @@ def main():
     root = os.environ.get("VLOG_FOOTAGE", ".")
     t, cands = 0.0, []
     for s in plan["segments"]:
-        d = s["dur"] if "photo" in s else (s["out"] - s["in"]) / s.get("speed", 1.0)
+        d = s.get("dur", 2.5) if "photo" in s else (s["out"] - s["in"]) / s.get("speed", 1.0)
+        d = round(d * plan.get("fps", 30)) / plan.get("fps", 30)  # render.py rounds every segment to whole frames
         if "src" in s and "audio" not in s and s.get("speed", 1.0) == 1.0 and s.get("vol", 1.0) >= 0.8 and d >= 3:
             cands.append((t, s, d))
         t += d
