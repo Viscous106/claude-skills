@@ -7,7 +7,7 @@ fall inside its in/out window, so trimming a segment never needs caption edits.
 import json
 from pathlib import Path
 
-from captions import CAP  # examples/captions_mumbai_trip.py, copied next to this file as captions.py
+from captions import CAP
 
 edit = Path(__file__).resolve().parents[1]
 
@@ -87,6 +87,7 @@ def gx(folder, n):
 
 
 # ================================================================= YouTube 16:9 trip vlog
+SPECIAL = (20.7, 23.4)  # WA0143: just "...kuch toh special hua aaj" (the chocolate-shake talk before it is out)
 yt = [
     {"name": "hook", "segments": [
         clip(MD + "VID-20261108-WA0141.mp4", 20.0, 29.4, titles=[label("Marine Drive · 7 Nov", 0.2, 2.6),
@@ -97,31 +98,37 @@ yt = [
          clip(TR + "VID-20261108-WA0154.mp4", 0.0, 6.0, vol=0.0, fade_in=0.3,
               titles=[title("Mumbai Trip", "BLR → MUM · 5 DIN · 5 DOST", 0.4, 5.8)]),
      ]},
-    {"name": "departure", "music": [{"track": "Life of Riley", "from": 6.0, "vol": 0.13}],
+    {"name": "departure", "music": [{"track": "Life of Riley", "from": 6.0, "vol": 0.12}],
      "segments": [
          clip(GE + "b0925541a84ad47f742431fcb83a402bdbe49f5c9aed5514350f53bdbdd6d869.mp4", 0.0, 5.0, vol=0,
               titles=[pop("4 din pehle...", 0.2, 2.2, 0.2)]),
-         clip(TR + "GX010075.MP4", 0.0, 16.2, titles=[label("Yash", 9.0, 12.9)]),
-         clip(TR + "GX010090.MP4", 0.8, 9.2),
+         clip(TR + "GX010075.MP4", 0.0, 15.0, titles=[label("Yash", 9.0, 12.9)]),  # ends on "Hi bolo guys!"
+         # the bird got Yash's tee on the way (GX010085), then Div tells the story at the bus stand
+         clip(TR + "GX010085.MP4", 0.0, 1.9, titles=[pop("Chidiya ne beat kar di!", 0.3, 3.9, 0.2)]),
+         photo(GFX + "bird_hold.jpg", 2.0, kenburns="in"),
+         clip(TR + "GX010090.MP4", 0.8, 31.0, titles=[pop("Shubh sanket?!", 10.2, 13.5, 0.2)]),
          clip(TR + "GX010093.MP4", 0.2, 39.3, titles=[label("Soham", 9.0, 13.0), label("Abhinav", 23.4, 27.6),
                                                       label("Divija & Div", 33.2, 37.8)]),
+         clip(TR + "GX010093.MP4", 43.5, 52.8, rotate=-90),
      ]},
-    {"name": "busnight", "music": [{"track": "Meditation Impromptu 01", "vol": 0.10, "fade": 1.5}],
+    {"name": "busnight", "music": [{"track": "Meditation Impromptu 01", "vol": 0.09, "fade": 1.5}],
      "segments": [
          clip(TR + "VID-20261108-WA0118.mp4", 6.6, 8.9, vol=0.2),
-         clip(gx(TR, 10027), 0.0, 3.3, vol=0.3),
-         clip(TR + "VID-20261108-WA0147.mp4", 46.0, 50.5, vol=0.4),
-         clip(gx(SH, 10040), 0.5, 6.0, titles=[pop("Bus mein shayari session", 0.2, 2.6, 0.18)]),
+         clip(gx(TR, 10027), 0.0, 17.3),
+         clip(TR + "VID-20261108-WA0147.mp4", 24.5, 51.0),
+         clip(gx(SH, 10040), 0.5, 20.4, titles=[pop("Bus mein shayari session", 0.2, 2.6, 0.18)]),
          clip(gx(SH, 10041), 1.0, 11.3),
-         clip(gx(SH, 10040), 5.1, 12.8, audio=(gx(SH, 10041), 11.3)),
-         clip(gx(SH, 10040), 16.9, 20.6, audio=(gx(SH, 10041), 19.0)),
-         clip(gx(SH, 10038), 20.4, 31.9, titles=[pop("FRIEND-ZONED!", 1.0, 4.0, 0.22)]),
+         # the rest of the take is on 041's sound; its picture swings to a stranger, so it plays over the
+         # window view from 038 (nobody on screen talking -> no lip-sync mismatch)
+         clip(gx(SH, 10038), 0.4, 11.8, audio=(gx(SH, 10041), 11.3)),
+         clip(gx(SH, 10038), 20.4, 34.3, titles=[pop("FRIEND-ZONED!", 1.0, 4.0, 0.22)]),
+         clip(gx(SH, 10042), 0.1, 47.3, titles=[pop("Shayari, part 2", 0.3, 2.8, 0.18)]),
      ]},
-    {"name": "dawn", "music": [{"track": "Easy Lemon", "vol": 0.30, "fade": 1.5}],
+    {"name": "dawn", "music": [{"track": "Easy Lemon", "vol": 0.22, "fade": 1.5}],
      "segments": [
          clip(TR + "VID-20261104-WA0043.mp4", 0.5, 5.5, vol=0),
          clip(gx(TR, 10002), 0.0, 2.2, vol=0),
-         clip(gx(TR, 10048), 10.0, 19.5, vol=0.5),
+         clip(gx(TR, 10048), 0.0, 19.5),
      ]},
     {"name": "expressway", "music": [{"track": "Hyperfun", "vol": 0.42, "fade": 1.5}],
      "segments": [
@@ -132,38 +139,39 @@ yt = [
          clip(gx(TR, 10022), 0.0, 7.0, vol=0),
          clip(TR + "VID-20261104-WA0054.mp4", 0.0, 6.0, vol=0, titles=[pop("Mumbai pahunch gaye!", 0.3, 4.0, 0.22)]),
      ]},
-    {"name": "guesthouse", "music": [{"track": "Local Forecast - Elevator", "vol": 0.14, "fade": 1.5}],
+    {"name": "guesthouse", "music": [{"track": "Local Forecast - Elevator", "vol": 0.12, "fade": 1.5}],
      "segments": [
-         clip(GH + "GG010004_enhanced.mp4", 0.0, 2.8, vol=0.4, titles=[label("CIFE Guest House", 0.2, 2.8)]),
-         clip(gx(GH, 10117), 0.0, 5.0),
+         clip(GH + "GG010004_enhanced.mp4", 0.0, 2.8, vol=0.4, titles=[label("Hamara hotel", 0.2, 2.8)]),
+         clip(gx(GH, 10117), 0.0, 20.6),
          clip(gx(GH, 10131), 26.9, 33.0, vol=0.3, cap=False),
      ]},
-    {"name": "juhu", "music": [{"track": "Easy Lemon", "from": 20.0, "vol": 0.15, "fade": 1.5}],
+    {"name": "juhu", "music": [{"track": "Easy Lemon", "from": 20.0, "vol": 0.13, "fade": 1.5}],
      "segments": [
          clip(gx(TR, 10051), 0.0, 5.5, vol=0.3),
-         clip(gx(GE, 10049), 11.4, 17.6),
+         clip(gx(GE, 10049), 1.2, 19.0),  # 19-44 asks strangers on the street: left out
          clip(gx(JU, 10053), 0.0, 3.0, vol=0.3),
          clip(gx(TR, 10061), 0.0, 4.0, vol=0.2),
          clip(gx(TR, 10061), 113.0, 122.0, vol=0.2, titles=[title("Juhu Beach", "DAY 1 · 4 NOV", 0.4, 6.0)]),
          clip(gx(JU, 10073), 1.0, 24.3),
          clip(gx(JU, 10071), 0.0, 4.0, vol=0.3),
-         clip(gx(JU, 10085), 0.0, 6.4, titles=[pop("Kulfi cheers!", 0.1, 1.6, 0.2)]),
-         clip(gx(JU, 10093), 0.0, 7.1, vol=0.6),
-         clip(gx(JU, 10094), 0.0, 7.0, vol=0.4),
+         clip(gx(JU, 10085), 0.0, 6.8, titles=[pop("Kulfi cheers!", 0.1, 1.6, 0.2)]),
+         clip(gx(JU, 10093), 0.0, 7.1, vol=0.8),
+         clip(gx(JU, 10094), 0.0, 7.0, vol=0.6),
          clip(gx(JU, 10074), 17.0, 22.0, vol=0.5),
-         clip(gx(JU, 10103), 27.5, 31.5, rotate=90, vol=0.5, cap=False),
+         clip(gx(JU, 10103), 0.0, 21.0),
+         clip(gx(JU, 10103), 21.0, 35.5, rotate=90),
          clip(gx(JU, 10108), 0.0, 5.0, vol=0.3),
          clip(gx(JU, 10110), 27.7, 33.0, audio=(gx(JU, 10115), 0.2)),  # "ecstatic... okay" over the stalls
          clip(gx(JU, 10110), 47.3, 51.0, audio=(gx(JU, 10115), 5.5)),
          clip(gx(JU, 10110), 6.4, 7.6, audio=(gx(JU, 10115), 9.2)),
      ]},
-    {"name": "hackmorning", "music": [{"track": "Funkorama", "vol": 0.13, "fade": 1.5}],
+    {"name": "hackmorning", "music": [{"track": "Funkorama", "vol": 0.11, "fade": 1.5}],
      "segments": [
-         clip(GH + "VID-20261108-WA0098.mp4", 10.2, 16.0, audio=(GH + "VID-20261108-WA0098.mp4", 2.2)),
+         clip(GH + "VID-20261108-WA0098.mp4", 2.0, 41.0),
          clip(gx(GH, 10131), 9.0, 17.3, audio=(gx(GH, 10131), 2.9)),
          clip(gx(GH, 10142), 0.6, 7.3),
          clip(gx(GH, 10131), 26.9, 38.4, audio=(gx(GH, 10142), 7.3)),
-         clip(gx(GH, 10123), 0.0, 7.6, rotate=90),
+         clip(gx(GH, 10123), 0.0, 12.9, rotate=90),
          clip(gx(TR, 10161), 0.0, 4.0, vol=0.2),
          clip(gx(TR, 10167), 22.4, 27.0, vol=0.2, titles=[pop("BKC", 0.3, 3.5, 0.22)]),
      ]},
@@ -180,16 +188,13 @@ yt = [
          clip(gx(EG, 10193), 0.0, 10.5, vol=0.4, cap=False, titles=[pop("Hacking shuru!", 0.5, 3.0, 0.2)]),
          clip(gx(EG, 10197), 0.5, 5.0, vol=0.3, cap=False),
      ]},
-    {"name": "ethnight", "music": [{"track": "Thinking Music", "vol": 0.12, "fade": 1.5}],
+    {"name": "ethnight", "music": [{"track": "Thinking Music", "vol": 0.10, "fade": 1.5}],
      "segments": [
          clip(JI + "VID_20261105_223559.mp4", 22.0, 28.0, vol=0.3, cap=False),
          clip(gx(EG, 10206), 0.0, 8.0, vol=0.3, cap=False),
-         clip(gx(EG, 10204), 0.5, 12.0),
-         clip(gx(EG, 10204), 14.4, 25.0),
-         clip(gx(EG, 10204), 27.8, 54.5),
-         clip(gx(EG, 10204), 59.5, 66.5),
-         clip(gx(JI, 10222), 10.0, 30.0, speed=4.0, titles=[pop("4 AM: building explore", 0.2, 4.8, 0.2)]),
-         clip(gx(JI, 10222), 186.0, 203.0, speed=2.0),
+         clip(gx(EG, 10204), 0.5, 66.5),
+         clip(gx(JI, 10222), 15.0, 70.0, titles=[pop("4 AM: building explore", 0.2, 4.8, 0.2)]),
+         clip(gx(JI, 10222), 155.0, 203.0),
          clip(gx(EG, 10223), 0.0, 16.9),
          clip(gx(EG, 10234), 1.8, 13.5, rotate=-90, titles=[pop("Soham.exe has stopped", 0.3, 3.5, 0.2)]),
          photo(EG + "GOPR0229_enhanced.png", 2.0, fit="blur"),
@@ -204,19 +209,19 @@ yt = [
               titles=[pop("Judging time!", 0.3, 2.8, 0.2)]),
          photo(EG + "WhatsApp Image 2026-11-09 at 9.38.17 PM.jpeg", 3.0, fit="blur",
                titles=[pop("Hackathon: DONE!", 0.3, 2.8, 0.15)]),
-         clip(gx(TR, 10256), 6.5, 11.0, vol=0.2),
+         clip(gx(TR, 10256), 3.5, 30.0),
          clip(gx(TR, 10261), 35.6, 45.0, speed=1.5, vol=0),
      ]},
-    {"name": "jio", "music": [{"track": "Wholesome", "vol": 0.30, "fade": 1.5}],
+    {"name": "jio", "music": [{"track": "Wholesome", "vol": 0.12, "fade": 1.5}],
      "segments": [
          clip(JI + "VID_20261107_144321.mp4", 3.0, 11.0, vol=0, titles=[pop("Jio World Centre", 0.3, 3.0, 0.2)]),
-         clip(JI + "VID-20261107-WA0001.mp4", 11.5, 19.0, vol=0),
-         clip(JI + "VID-20261108-WA0142.mp4", 22.0, 29.0, vol=0),
-         clip(JI + "VID-20261107-WA0002.mp4", 0.0, 8.0, vol=0.6, titles=[label("Soham", 0.3, 3.0)]),
+         clip(JI + "VID-20261107-WA0001.mp4", 0.0, 55.2),
+         clip(JI + "VID-20261108-WA0142.mp4", 0.0, 29.0),
+         clip(JI + "VID-20261107-WA0002.mp4", 0.0, 89.1, titles=[label("Soham", 0.3, 3.0)]),
      ]},
-    {"name": "marine_calm", "music": [{"track": "Dreamer", "vol": 0.14, "fade": 1.5}],
+    {"name": "marine_calm", "music": [{"track": "Dreamer", "vol": 0.12, "fade": 1.5}],
      "segments": [
-         clip(MD + "VID-20261108-WA0141.mp4", 8.5, 20.0, titles=[title("Marine Drive", "7 NOV · RAAT", 0.4, 4.5)]),
+         clip(MD + "VID-20261108-WA0141.mp4", 0.0, 20.0, titles=[title("Marine Drive", "7 NOV · RAAT", 0.4, 4.5)]),
      ]},
     {"name": "marine_call", "segments": [
         clip(MD + "VID-20261108-WA0141.mp4", 20.0, 29.4, titles=[
@@ -227,31 +232,29 @@ yt = [
      "segments": [
          photo(GFX + "win_card_16x9.jpg", 5.5, focus=0.5),
      ]},
-    {"name": "marine_react", "music": [{"track": "Inspired", "from": 8.0, "vol": 0.10, "fade": 1.5}],
+    {"name": "marine_react", "music": [{"track": "Inspired", "from": 8.0, "vol": 0.09, "fade": 1.5}],
      "segments": [
-         clip(MD + "VID-20261108-WA0146.mp4", 4.5, 22.0),
+         clip(MD + "VID-20261108-WA0143.mp4", SPECIAL[0], SPECIAL[1]),  # "...kuch toh special hua aaj"
+         clip(MD + "VID-20261108-WA0146.mp4", 0.0, 22.0),               # Div: "hum jeet chuke hai!"
          clip(MD + "VID-20261108-WA0146.mp4", 22.5, 35.0, mute=[[4.5, 5.6]]),
-         clip(MD + "VID-20261108-WA0146.mp4", 38.9, 53.0),
-         clip(MD + "VID-20261108-WA0143.mp4", 0.0, 1.5),
-         clip(MD + "VID-20261108-WA0143.mp4", 10.0, 23.0),
-         clip(MD + "VID-20261108-WA0143.mp4", 48.8, 53.4),
-         clip(MD + "VID-20261108-WA0149.mp4", 15.0, 31.4),
-         clip(MD + "VID-20261108-WA0149.mp4", 41.5, 53.8),
-         clip(MD + "VID-20261108-WA0149.mp4", 72.5, 93.0),
+         clip(MD + "VID-20261108-WA0146.mp4", 35.0, 53.0),
+         clip(MD + "VID-20261108-WA0143.mp4", 48.8, 72.5),
+         clip(MD + "VID-20261108-WA0149.mp4", 0.0, 72.0),  # 72-93 is about the money (sponsored): left out
          photo(MD + "IMG-20261108-WA0061_enhanced.png", 3.0),
-         clip(MD + "VID-20261108-WA0146.mp4", 58.5, 65.0),
+         clip(MD + "VID-20261108-WA0146.mp4", 53.0, 66.5),  # ends on Div's flying kiss
      ]},
-    {"name": "oneam", "music": [{"track": "Fluffing a Duck", "vol": 0.22, "fade": 1.0}],
+    {"name": "oneam", "music": [{"track": "Fluffing a Duck", "vol": 0.12, "fade": 1.0}],
      "segments": [
-         clip(GH + "Snapchat-1984466552.mp4", 0.0, 0.6, vol=0.4),
-         clip(GH + "VID-20261108-WA0148.mp4", 6.0, 10.5, titles=[pop("1 AM: celebration waffles", 0.2, 4.3, 0.2)]),
-         clip(GH + "Snapchat-1984466552.mp4", 5.8, 8.5, vol=0.5),
+         clip(GH + "Snapchat-1984466552.mp4", 0.0, 12.0, vol=0.6),
+         clip(GH + "VID-20261108-WA0148.mp4", 0.0, 76.5, titles=[pop("1 AM: celebration waffles", 0.2, 4.3, 0.2)]),
      ]},
-    {"name": "checkout", "music": [{"track": "Carefree", "vol": 0.13, "fade": 1.5}],
+    {"name": "checkout", "music": [{"track": "Carefree", "vol": 0.11, "fade": 1.5}],
      "segments": [
-         clip(gx(GH, 10273), 0.1, 10.2, titles=[pop("8 Nov · last day", 0.2, 2.6, 0.2)]),
-         clip(gx(GH, 10273), 46.5, 58.0),
-         clip(gx(GH, 10273), 110.5, 123.4),
+         # skips 22.3-28.6 ("this is a fisheries research center": names the institute)
+         # and 62.4-68.2 ("by the way, we got this from ENS Partner Track")
+         clip(gx(GH, 10273), 0.1, 22.3, titles=[pop("8 Nov · last day", 0.2, 2.6, 0.2)]),
+         clip(gx(GH, 10273), 28.6, 62.4),
+         clip(gx(GH, 10273), 68.2, 123.4),
      ]},
     {"name": "catcafe", "music": [{"track": "Carefree", "from": 40.0, "vol": 0.13, "fade": 1.5}],
      "segments": [
@@ -270,16 +273,15 @@ yt = [
      "segments": [
          clip(gx(TR, 10325), 0.0, 1.0, vol=0.3),
          clip(gx(TR, 10334), 3.0, 4.3, vol=0.3),
-         clip(gx(MD, 10321), 4.5, 13.0),
-         clip(gx(MD, 10321), 28.6, 42.0),
+         clip(gx(MD, 10321), 4.5, 42.0),
      ]},
     {"name": "outro", "music": [{"track": "Heartwarming", "from": 22.0, "vol": 0.34, "fade": 2.0}],
      "segments": [
          clip(TR + "VID-20261108-WA0154.mp4", 9.9, 18.4, vol=0),
-         photo(JU + "IMG-20261108-WA0069_enhanced.png", 3.0),
+         photo(JU + "IMG-20261108-WA0069_enhanced.png", 3.0, fit="blur"),
          photo(EG + "WhatsApp Image 2026-11-09 at 9.38.08 PM.jpeg", 2.5, fit="blur"),
          photo(MD + "IMG-20261108-WA0085_enhanced.png", 2.5),
-         photo(JU + "DSC_0016_enhanced.png", 7.0, titles=[title("Thanks for watching!", EDITOR, 0.3, 6.8,
+         photo(JU + "DSC_0016_enhanced.png", 7.0, fit="blur", titles=[title("Thanks for watching!", EDITOR, 0.3, 6.8,
                                                               credits=[CREDIT])]),
      ]},
 ]
@@ -291,19 +293,32 @@ def end_card(text, sub):
 
 C = dict(fit="crop")  # landscape sources fill the vertical frame; aim with focus=
 
+
+def B(zoom, focus):
+    """people side by side / a big selfie face: show the middle 1/zoom of the width over a blurred fill"""
+    return dict(fit="blur", zoom=zoom, focus=focus)
+
+
 reel_travel = [
-    {"name": "reel", "music": [{"track": "Life of Riley", "vol": 0.40, "fade": 1.0}], "segments": [
-        clip(GE + "b0925541a84ad47f742431fcb83a402bdbe49f5c9aed5514350f53bdbdd6d869.mp4", 0.0, 3.0, vol=0, **C),
-        clip(TR + "GX010075.MP4", 0.0, 3.5, vol=0.6, focus=0.5, **C,
-             titles=[pop("Bengaluru → Mumbai", 0.1, 3.4, 0.18)]),
-        clip(TR + "GX010090.MP4", 4.4, 9.0, vol=0.3, focus=0.5, **C),
-        clip(TR + "GX010093.MP4", 11.0, 15.0, vol=0.3, focus=0.45, cap=False, **C),
+    {"name": "talk", "music": [{"track": "Life of Riley", "vol": 0.16, "fade": 1.0}], "segments": [
+        clip(GE + "b0925541a84ad47f742431fcb83a402bdbe49f5c9aed5514350f53bdbdd6d869.mp4", 0.0, 3.0, vol=0, **C,
+             titles=[pop("Bengaluru → Mumbai", 0.2, 2.9, 0.18)]),
+        clip(TR + "GX010075.MP4", 0.0, 15.0, **B(1.4, 0.2), titles=[label("Yash", 9.0, 12.9)]),
+        clip(TR + "GX010085.MP4", 0.0, 1.9, **B(1.3, 0.4), titles=[pop("Chidiya ne beat kar di!", 0.3, 3.3, 0.30)]),
+        photo(GFX + "bird_hold.jpg", 1.5, fit="blur", zoom=1.3, focus=0.4),
+        clip(TR + "GX010090.MP4", 0.8, 24.0, **B(1.15, 0.5), titles=[pop("Shubh sanket?!", 10.2, 13.5, 0.30)]),
+        clip(TR + "GX010093.MP4", 0.2, 4.6, **B(1.3, 0.5)),
+        clip(TR + "GX010093.MP4", 9.0, 30.5, **B(1.3, 0.45), titles=[label("Soham", 0.0, 4.0), label("Abhinav", 14.4, 18.6)]),
+        clip(TR + "GX010093.MP4", 33.5, 39.2, **B(1.3, 0.5), titles=[label("Divija & Div", 0.2, 5.0)]),
         clip(TR + "VID-20261108-WA0118.mp4", 7.0, 8.9, vol=0, focus=0.5, **C),
-        clip(TR + "VID-20261108-WA0147.mp4", 46.5, 50.0, vol=0.2, focus=0.45, **C,
-             titles=[pop("Overnight sleeper bus", 0.1, 3.4, 0.18)]),
-        clip(gx(TR, 10048), 10.0, 14.0, vol=0.2, focus=0.5, **C),
+        clip(gx(TR, 10027), 0.0, 7.0, focus=0.5, **C),
+        clip(TR + "VID-20261108-WA0147.mp4", 46.0, 50.5, vol=0.4, focus=0.45, **C,
+             titles=[pop("Overnight sleeper bus", 0.1, 3.4, 0.30)]),
+        clip(gx(TR, 10048), 0.0, 19.5, **B(1.2, 0.5)),
+    ]},
+    {"name": "ride", "music": [{"track": "Hyperfun", "vol": 0.40, "fade": 1.0}], "segments": [
         clip(gx(TR, 10002), 0.0, 2.2, vol=0, **C),
-        clip(gx(TR, 10017), 6.8, 12.0, vol=0, **C),
+        clip(gx(TR, 10017), 6.8, 12.0, vol=0, **C, titles=[pop("Mumbai–Pune Expressway", 0.2, 3.0, 0.30)]),
         clip(gx(TR, 10016), 0.0, 15.0, speed=3.0, focus=0.5, **C),
         clip(gx(TR, 10020), 30.0, 36.0, speed=2.0, focus=0.5, **C),
         clip(gx(TR, 10020), 40.0, 49.0, speed=1.5, focus=0.5, **C),
@@ -315,20 +330,20 @@ reel_travel = [
 ]
 
 reel_juhu = [
-    {"name": "reel", "music": [{"track": "Easy Lemon", "vol": 0.30, "fade": 1.0}], "segments": [
-        clip(gx(JU, 10053), 7.6, 9.0, vol=0.2, focus=0.3, **C, titles=[pop("POV: Mumbai, day 1", 0.1, 1.4, 0.18)]),
-        clip(gx(JU, 10073), 0.0, 8.0, focus=0.5, **C),
-        clip(gx(JU, 10071), 1.0, 3.5, focus=0.4, audio=(gx(JU, 10073), 8.0), **C),
-        clip(gx(JU, 10073), 10.5, 18.3, focus=0.5, **C),
-        clip(gx(JU, 10082), 18.0, 21.0, vol=0, focus=0.4, **C),
-        clip(gx(JU, 10074), 17.0, 21.0, vol=0.3, focus=0.5, **C),
-        clip(gx(JU, 10085), 0.0, 2.2, focus=0.5, **C),
-        clip(gx(JU, 10085), 3.9, 6.4, vol=0.4, focus=0.45, **C),
-        clip(gx(JU, 10093), 3.8, 5.6, vol=0.5, focus=0.42, **C),
-        clip(gx(JU, 10094), 0.0, 2.0, vol=0.3, focus=0.5, **C),
+    {"name": "reel", "music": [{"track": "Easy Lemon", "vol": 0.16, "fade": 1.0}], "segments": [
+        clip(gx(JU, 10053), 6.0, 9.0, vol=0.2, focus=0.3, **C, titles=[pop("POV: Mumbai, day 1", 0.1, 2.9, 0.18)]),
+        clip(gx(GE, 10049), 1.2, 19.0, **B(1.2, 0.5)),
+        clip(gx(TR, 10061), 113.0, 122.0, vol=0.2, focus=0.5, **C, titles=[pop("Juhu Beach!", 0.4, 4.0, 0.30)]),
+        clip(gx(JU, 10073), 1.0, 18.3, focus=0.5, **C),
+        clip(gx(JU, 10073), 18.3, 24.3, **B(1.0, 0.5)),
+        clip(gx(JU, 10071), 1.0, 3.5, vol=0.2, focus=0.4, **C),
+        clip(gx(JU, 10085), 0.0, 6.8, **B(1.3, 0.45), titles=[pop("Kulfi cheers!", 0.1, 1.8, 0.30)]),
+        clip(gx(JU, 10093), 0.0, 7.1, vol=0.8, **B(2.0, 0.4)),
+        clip(gx(JU, 10094), 0.0, 7.0, vol=0.6, focus=0.5, **C),
+        clip(gx(JU, 10074), 17.0, 22.0, vol=0.3, focus=0.5, **C),
+        clip(gx(JU, 10103), 0.0, 21.0, **B(1.0, 0.5)),
+        clip(gx(JU, 10103), 21.0, 35.5, rotate=90, **C),
         clip(gx(JU, 10083), 8.5, 11.5, vol=0, focus=0.65, **C),
-        clip(gx(JU, 10094), 3.4, 7.0, vol=0.3, focus=0.5, **C),
-        clip(gx(JU, 10073), 18.3, 21.3, focus=0.5, **C),
         clip(gx(JU, 10108), 0.0, 3.5, focus=0.6, audio=(gx(JU, 10115), 0.2), **C),
         clip(gx(JU, 10110), 28.0, 31.0, focus=0.5, audio=(gx(JU, 10115), 3.7), **C),
         clip(gx(JU, 10110), 47.3, 51.0, focus=0.5, fade_out=0.4, audio=(gx(JU, 10115), 6.7), **C,
@@ -337,99 +352,106 @@ reel_juhu = [
 ]
 
 reel_eth = [
-    {"name": "reel", "music": [{"track": "Pamgaea", "vol": 0.30, "fade": 1.0}], "segments": [
-        photo(EG + "GOPR0172_enhanced.png", 2.0, focus=0.55, titles=[pop("5 dost. 1 hackathon.", 0.1, 2.0, 0.18)]),
-        clip(gx(EG, 10178), 0.0, 3.0, vol=0.2, cap=False, **C),
-        clip(gx(EG, 10197), 0.5, 3.5, vol=0.2, cap=False, **C),
-        clip(gx(EG, 10193), 0.5, 3.5, vol=0.2, focus=0.4, cap=False, **C),
-        clip(gx(EG, 10206), 0.0, 3.0, vol=0.2, cap=False, focus=0.5, **C, titles=[pop("Raat ke 3 baje...", 0.2, 3.0, 0.18)]),
-        clip(gx(EG, 10204), 0.5, 1.8, focus=0.5, **C),
-        clip(gx(EG, 10204), 8.0, 11.9, focus=0.5, **C),
-        clip(gx(EG, 10204), 14.4, 18.2, focus=0.5, **C),
-        clip(gx(EG, 10204), 46.8, 50.0, focus=0.6, **C),
-        clip(gx(EG, 10223), 10.5, 15.5, focus=0.6, **C),
-        clip(gx(JI, 10222), 12.0, 28.0, speed=4.0, focus=0.5, **C),
-        clip(gx(EG, 10234), 1.8, 9.5, rotate=-90, **C),
-        clip(EG + "VID-20261108-WA0123.mp4", 0.0, 2.2, vol=0.3, cap=False, **C),
-        clip(EG + "VID-20261108-WA0012.mp4", 0.0, 3.0, vol=0.3, cap=False, focus=0.5, **C,
-             titles=[pop("Judging!", 0.2, 2.8, 0.18)]),
-        clip(EG + "VID-20261108-WA0012.mp4", 12.0, 15.0, vol=0.3, cap=False, focus=0.5, **C),
-        photo(EG + "WhatsApp Image 2026-11-09 at 9.38.17 PM.jpeg", 2.0, focus=0.5),
-        photo(GFX + "win_card_9x16.jpg", 4.0, focus=0.5,
-              titles=[{**end_card("ETHGlobal Mumbai", "BUILD ON ARKIV · $1,000"), "start": 0.4, "end": 4.0}]),
+    {"name": "reel", "music": [{"track": "Pamgaea", "vol": 0.14, "fade": 1.0}], "segments": [
+        photo(EG + "GOPR0172_enhanced.png", 3.0, fit="blur", zoom=1.25, focus=0.5,
+              titles=[pop("5 dost. 1 hackathon.", 0.1, 3.0, 0.18)]),
+        clip(gx(EG, 10178), 0.0, 5.7, vol=0.3, cap=False, **C, titles=[pop("Devcon badge banao!", 0.3, 3.0, 0.30)]),
+        clip(gx(EG, 10193), 0.5, 10.5, vol=0.3, focus=0.4, cap=False, **C, titles=[pop("Hacking shuru!", 0.5, 3.0, 0.30)]),
+        clip(gx(EG, 10206), 0.0, 8.0, vol=0.3, cap=False, focus=0.5, **C, titles=[pop("Raat ke 3 baje...", 0.2, 3.5, 0.30)]),
+        clip(gx(EG, 10204), 0.5, 12.0, focus=0.5, **C),
+        clip(gx(EG, 10204), 12.0, 54.5, **B(1.2, 0.55)),
+        clip(gx(EG, 10204), 54.5, 66.5, focus=0.5, **C),
+        clip(gx(JI, 10222), 15.0, 30.0, speed=3.0, focus=0.5, **C, titles=[pop("4 AM: building explore", 0.2, 4.8, 0.30)]),
+        clip(gx(JI, 10222), 186.0, 200.0, speed=2.0, focus=0.5, **C),
+        clip(gx(EG, 10223), 0.0, 16.9, **B(1.2, 0.6)),
+        clip(gx(EG, 10234), 1.8, 13.5, rotate=-90, **C, titles=[pop("Soham.exe has stopped", 0.3, 3.5, 0.30)]),
+        clip(gx(EG, 10246), 0.5, 6.5, focus=0.5, **C),
+        clip(EG + "VID-20261108-WA0123.mp4", 0.0, 7.1, vol=0.4, cap=False, **C, titles=[pop("Mehendi break", 0.3, 2.6, 0.30)]),
+        clip(EG + "VID-20261108-WA0012.mp4", 0.0, 15.0, vol=0.4, cap=False, **B(1.1, 0.5),
+             titles=[pop("Judging!", 0.2, 2.8, 0.30)]),
+        photo(EG + "WhatsApp Image 2026-11-09 at 9.38.17 PM.jpeg", 3.0, fit="blur",
+              titles=[pop("Hackathon: DONE!", 0.3, 2.8, 0.30)]),
+        photo(GFX + "win_card_9x16.jpg", 4.5, focus=0.5,
+              titles=[{**end_card("ETHGlobal Mumbai", "BUILD ON ARKIV · $1,000"), "start": 0.4, "end": 4.5}]),
     ]},
 ]
 
 reel_jio = [
-    {"name": "reel", "music": [{"track": "Wholesome", "vol": 0.40, "fade": 1.0}], "segments": [
+    {"name": "reel", "music": [{"track": "Wholesome", "vol": 0.16, "fade": 1.0}], "segments": [
         clip(JI + "VID_20261105_223559.mp4", 24.0, 28.0, vol=0, focus=0.5, **C,
              titles=[pop("Jio World Centre, Mumbai", 0.2, 3.8, 0.18)]),
-        photo(EG + "GOPR0173_enhanced.png", 1.4, focus=0.5),
-        clip(gx(EG, 10175), 0.0, 3.5, vol=0, focus=0.5, cap=False, **C),
-        clip(gx(EG, 10178), 13.5, 15.0, vol=0, cap=False, **C),
-        photo(EG + "GOPR0179_enhanced.png", 0.9, focus=0.5),
-        photo(EG + "GOPR0180_enhanced.png", 0.9, focus=0.5),
-        clip(gx(EG, 10187), 0.0, 3.0, vol=0, focus=0.5, cap=False, **C, titles=[pop("Devcon talks", 0.2, 2.8, 0.18)]),
+        photo(EG + "GOPR0173_enhanced.png", 2.0, focus=0.5),
+        clip(gx(EG, 10187), 0.0, 5.0, vol=0.2, focus=0.5, cap=False, **C, titles=[pop("Devcon talks", 0.2, 2.8, 0.30)]),
         clip(gx(EG, 10192), 3.5, 6.0, vol=0, focus=0.5, cap=False, **C),
-        clip(gx(JI, 10222), 186.0, 200.0, speed=2.0, focus=0.5, **C),
-        clip(JI + "VID_20261107_144321.mp4", 3.0, 10.0, vol=0, **C),
-        clip(JI + "VID-20261107-WA0001.mp4", 12.0, 17.0, vol=0, focus=0.5, **C),
-        clip(JI + "VID-20261108-WA0142.mp4", 23.0, 28.0, vol=0, focus=0.5, **C),
-        clip(JI + "VID-20261107-WA0002.mp4", 0.0, 4.0, vol=0.3, focus=0.5, cap=False, **C, titles=[label("Soham", 0.2, 3.8)]),
+        clip(JI + "VID_20261107_144321.mp4", 3.0, 11.0, vol=0, **C),
+        clip(JI + "VID-20261107-WA0001.mp4", 0.0, 30.0, focus=0.5, **C),
+        clip(JI + "VID-20261107-WA0001.mp4", 50.5, 55.2, **B(1.2, 0.5)),
+        clip(JI + "VID-20261108-WA0142.mp4", 0.0, 15.0, focus=0.5, **C),
+        clip(JI + "VID-20261108-WA0142.mp4", 22.0, 29.0, **B(1.1, 0.5)),
+        clip(JI + "VID-20261107-WA0002.mp4", 0.0, 48.4, **B(1.4, 0.5), titles=[label("Soham", 0.2, 3.8)]),
+        clip(JI + "VID-20261107-WA0002.mp4", 67.0, 89.1, **B(1.4, 0.5)),
         clip(JI + "VID-20261108-WA0115.mp4", 42.0, 46.0, vol=0, focus=0.5, **C),
-        photo(JI + "IMG-20261108-WA0076_enhanced.png", 1.6, focus=0.5),
-        photo(JI + "IMG_20261107_144239_HDR_enhanced.png", 3.0, focus=0.5,
-              titles=[{**end_card("Jio World Centre", "DEVCON · MUMBAI"), "end": 3.0}]),
+        photo(JI + "IMG-20261108-WA0076_enhanced.png", 2.0, focus=0.5),
+        photo(JI + "IMG_20261107_144239_HDR_enhanced.png", 3.5, focus=0.5,
+              titles=[{**end_card("Jio World Centre", "DEVCON · MUMBAI"), "end": 3.5}]),
     ]},
 ]
 
 reel_guesthouse = [
-    {"name": "reel", "music": [{"track": "Funkorama", "vol": 0.22, "fade": 1.0}], "segments": [
+    {"name": "reel", "music": [{"track": "Funkorama", "vol": 0.12, "fade": 1.0}], "segments": [
         clip(GH + "GG010004_enhanced.mp4", 0.0, 2.8, vol=0.2, focus=0.5, **C,
              titles=[pop("Hamara Mumbai ghar", 0.1, 2.8, 0.18)]),
         photo(GH + "GOPR0014_enhanced.png", 1.5, focus=0.5),
-        clip(gx(GH, 10117), 0.5, 4.0, **C),
-        clip(GH + "VID-20261108-WA0098.mp4", 10.2, 16.0, focus=0.5, audio=(GH + "VID-20261108-WA0098.mp4", 2.2), **C),
-        clip(gx(GH, 10131), 9.6, 13.0, focus=0.5, audio=(gx(GH, 10131), 2.9), **C),
+        clip(gx(GH, 10117), 0.0, 9.5, **B(1.3, 0.5)),
+        clip(GH + "VID-20261108-WA0098.mp4", 2.0, 20.0, focus=0.5, **C),
+        clip(GH + "VID-20261108-WA0098.mp4", 29.5, 41.0, focus=0.5, **C),
+        clip(gx(GH, 10131), 9.0, 17.3, focus=0.5, audio=(gx(GH, 10131), 2.9), **C),
         clip(gx(GH, 10132), 0.0, 1.3, vol=0.2, **C),
-        photo(GH + "GOPR0137_enhanced.png", 0.8, focus=0.5),
-        photo(GH + "GOPR0134_enhanced.png", 0.8, focus=0.5),
+        photo(GH + "GOPR0137_enhanced.png", 0.8, focus=0.0),
+        photo(GH + "GOPR0134_enhanced.png", 0.8, focus=1.0),
         photo(GH + "GOPR0136_enhanced.png", 0.8, focus=0.5),
-        clip(gx(GH, 10142), 0.6, 8.0, **C),
-        clip(gx(GH, 10123), 0.0, 6.6, rotate=90, focus=0.4, **C),
-        clip(gx(GH, 10131), 30.0, 33.5, vol=0.2, focus=0.5, cap=False, **C,
-             titles=[pop("Hackathon mode: ON", 0.2, 3.3, 0.18)]),
-        clip(GH + "Snapchat-1984466552.mp4", 6.0, 8.5, vol=0.4, cap=False, **C),
-        clip(GH + "VID-20261108-WA0148.mp4", 6.4, 11.4, focus=0.5, **C),
-        clip(gx(GH, 10273), 3.1, 8.1, focus=0.5, **C),
-        clip(gx(GH, 10273), 49.6, 53.6, focus=0.5, cap=False, vol=0.3, **C),
-        clip(gx(GH, 10273), 114.0, 117.6, focus=0.5, fade_out=0.4, **C,
-             titles=[{**end_card("CIFE Guest House", "MUMBAI"), "start": 0.4, "end": 3.6}]),
+        clip(gx(GH, 10142), 0.6, 7.3, **C),
+        clip(gx(GH, 10131), 26.9, 38.4, focus=0.5, audio=(gx(GH, 10142), 7.3), **C),
+        clip(gx(GH, 10123), 0.0, 12.9, rotate=90, focus=0.4, **C, titles=[pop("Hackathon mode: ON", 8.5, 12.5, 0.30)]),
+        clip(GH + "Snapchat-1984466552.mp4", 0.0, 12.0, vol=0.5, cap=False, **C),
+        clip(GH + "VID-20261108-WA0148.mp4", 6.0, 43.9, **B(1.2, 0.5), titles=[pop("1 AM: celebration waffles", 0.2, 4.0, 0.30)]),
+        clip(GH + "VID-20261108-WA0148.mp4", 46.5, 50.2, **B(1.2, 0.5)),
+        clip(gx(GH, 10273), 3.1, 9.1, **B(1.8, 0.6)),
+        clip(gx(GH, 10273), 44.0, 62.4, focus=0.5, **C),
+        clip(gx(GH, 10273), 110.5, 123.4, fade_out=0.4, **B(1.3, 0.3),
+             titles=[{**end_card("Hamara Hotel", "MUMBAI"), "start": 8.0, "end": 12.9}]),
     ]},
 ]
 
 reel_marine = [
-    {"name": "reel", "music": [{"track": "Dreamer", "vol": 0.18, "fade": 1.0}], "segments": [
-        clip(MD + "VID-20261108-WA0141.mp4", 9.0, 14.5, focus=0.5, **C,
-             titles=[pop("Hackathon khatam. Marine Drive.", 0.2, 3.5, 0.18)]),
+    {"name": "reel", "music": [{"track": "Dreamer", "vol": 0.14, "fade": 1.0}], "segments": [
+        clip(MD + "VID-20261108-WA0141.mp4", 0.0, 20.0, focus=0.5, **C,
+             titles=[pop("Hackathon khatam. Marine Drive.", 0.2, 4.0, 0.18)]),
         clip(MD + "VID-20261108-WA0141.mp4", 20.0, 29.4, focus=0.5, **C,
-             titles=[pop("...tabhi Divija ka phone aaya", 0.1, 2.0, 0.30), label("Divija", 0.3, 2.0)]),
+             titles=[pop("...tabhi Divija ka phone aaya", 0.1, 2.6, 0.30), label("Divija", 0.3, 2.6)]),
     ]},
-    {"name": "win", "music": [{"track": "Inspired", "vol": 0.16, "fade": 1.0}], "segments": [
+    {"name": "win", "music": [{"track": "Inspired", "vol": 0.12, "fade": 1.0}], "segments": [
         photo(GFX + "win_card_9x16.jpg", 3.5, focus=0.5),
-        clip(MD + "VID-20261108-WA0146.mp4", 4.2, 14.0, focus=0.5, **C),
-        clip(MD + "VID-20261108-WA0146.mp4", 17.8, 22.0, focus=0.5, **C),
-        clip(MD + "VID-20261108-WA0146.mp4", 26.0, 34.3, focus=0.5, mute=[[0.9, 1.7]], **C),
-        clip(MD + "VID-20261108-WA0146.mp4", 44.5, 50.5, focus=0.5, **C),
-        clip(MD + "VID-20261108-WA0149.mp4", 88.0, 93.0, focus=0.5, **C),
-        clip(MD + "VID-20261108-WA0146.mp4", 59.5, 64.5, focus=0.5, fade_out=0.4, **C,
-             titles=[{**end_card("ETHGlobal Mumbai", "2ND PLACE · BUILD ON ARKIV"), "start": 0.8, "end": 5.0}]),
+        clip(MD + "VID-20261108-WA0143.mp4", SPECIAL[0], SPECIAL[1], **B(1.8, 0.75)),
+        clip(MD + "VID-20261108-WA0146.mp4", 0.0, 14.0, **B(2.0, 0.1)),
+        clip(MD + "VID-20261108-WA0146.mp4", 14.0, 22.5, **B(2.0, 0.25)),
+        clip(MD + "VID-20261108-WA0146.mp4", 22.5, 35.0, mute=[[4.5, 5.6]], **B(2.0, 0.3)),
+        clip(MD + "VID-20261108-WA0146.mp4", 35.0, 53.0, **B(1.15, 0.4)),
+        clip(MD + "VID-20261108-WA0149.mp4", 15.0, 31.4, **B(1.2, 0.35)),
+        clip(MD + "VID-20261108-WA0149.mp4", 41.5, 53.8, **B(1.3, 0.5)),
+        clip(MD + "VID-20261108-WA0149.mp4", 53.8, 64.4, **B(1.05, 0.5)),
+        clip(MD + "VID-20261108-WA0146.mp4", 53.0, 63.3, fade_out=0.4, **B(2.0, 0.15),
+             titles=[{**end_card("ETHGlobal Mumbai", "2ND PLACE · BUILD ON ARKIV"), "start": 5.3, "end": 10.3}]),
     ]},
 ]
 
 reel_shayari = [
-    {"name": "reel", "music": [{"track": "Meditation Impromptu 01", "vol": 0.12, "fade": 1.5}], "segments": [
-        clip(gx(SH, 10042), 0.1, 42.0, focus=0.5, **C, titles=[pop("Sleeper bus shayari", 0.2, 2.6, 0.16)]),
+    {"name": "reel", "music": [{"track": "Meditation Impromptu 01", "vol": 0.10, "fade": 1.5}], "segments": [
+        clip(gx(SH, 10040), 0.5, 20.4, **B(1.3, 0.5), titles=[pop("Sleeper bus shayari", 0.2, 2.8, 0.18)]),
+        clip(gx(SH, 10041), 1.0, 11.3, **B(1.3, 0.5)),
+        clip(gx(SH, 10038), 0.4, 11.8, focus=0.5, audio=(gx(SH, 10041), 11.3), **C),
+        clip(gx(SH, 10038), 20.4, 34.3, focus=0.5, **C, titles=[pop("FRIEND-ZONED!", 1.0, 4.0, 0.30)]),
+        clip(gx(SH, 10042), 0.1, 42.0, focus=0.5, **C, titles=[pop("Shayari, part 2", 0.3, 2.8, 0.30)]),
         clip(gx(SH, 10042), 42.9, 44.0, speed=0.2, focus=0.5, audio=(gx(SH, 10042), 42.0), fade_out=0.6, **C),
     ]},
 ]

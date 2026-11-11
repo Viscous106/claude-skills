@@ -23,7 +23,9 @@ Sibling skills, load when you reach that phase:
    photos, and actually look at every one. Write down per clip: what happens, who is
    in it, orientation problems (sideways clips), shaky/blurry stretches, duplicates.
 2. **Ask only what changes the edit** — in one round, as soon as you have looked:
-   - platform(s) and length per cut (YouTube 3–5 min / Reel ≤60 s is a common pair);
+   - platform(s) and length per cut (YouTube 3–5 min / Reel ≤60 s is a common pair, but ask:
+     a trip vlog can run 30 min and Reels up to 3 min, and a 60 s Reel of a dialogue-heavy
+     place feels rushed);
    - narration: real dialogue only, real lines re-used over b-roll, user-recorded VO,
      or AI VO — and what to do with silent stretches (music is the usual answer);
    - language of the dialogue (Hinglish? → see `footage-analysis` for transcription);
@@ -80,6 +82,11 @@ Reels from 9 folders) with `examples/captions_mumbai_trip.py`.
   time); `clip()` picks the lines inside each segment's window, including VO borrowed via
   `audio=`. Trimming then never needs caption edits. Lines nobody can make out stay
   uncaptioned; on-screen Pop text can carry the story there instead.
+- Play self-introduction clips whole in the long cut (every member's "Hi guys, I am…" and
+  the "stay tuned" sign-off), even with a few shaky seconds — users miss them when trimmed
+  to the first speaker, and the name labels belong on those intros.
+- Reels: run the crop audit (`video-edit-render`) before the final render; groups and
+  moving selfie faces get `fit: blur` + `zoom`, not `fit: crop`.
 - Keep private moments out (sleeping people unless the user OKs it, strangers' faces,
   copyrighted films on a laptop, forwarded trailers) and bleep swearing with `mute`.
 - Thumbnail: Polaroid collage of 4–6 moments with the hook in big type
